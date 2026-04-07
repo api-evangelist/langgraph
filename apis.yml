@@ -1,8 +1,7 @@
 aid: langgraph
 name: LangGraph
 description: >-
-  Gain control with LangGraph to design agentsthat reliably handle complex
-  tasks. 
+  Gain control with LangGraph to design agentsthat reliably handle complex tasks.
 type: Index
 position: Consumer
 access: 3rd-Party
@@ -18,8 +17,7 @@ apis:
   - aid: langgraph:langgraph
     name: LangGraph
     description: >-
-      Gain control with LangGraph to design agentsthat reliably handle complex
-      tasks. 
+      Gain control with LangGraph to design agentsthat reliably handle complex tasks.
     humanURL: ' https://www.langchain.com/langgraph'
     tags:
       - API
