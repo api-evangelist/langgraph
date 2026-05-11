@@ -59,6 +59,13 @@ common:
   - name: LangChain
     url: https://www.langchain.com/
     type: ParentCompany
+  - type: Integrations
+    url: https://docs.langchain.com/oss/python/integrations/providers/overview
+integrations:
+  - name: light
+  - name: dark
+  - name: Downloads per month
+  - name: PyPI - Latest version
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com
