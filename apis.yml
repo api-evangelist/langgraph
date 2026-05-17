@@ -5,7 +5,7 @@ description: >-
   agent workflows with low-level primitives for greater control over agent behavior.
   LangGraph Platform (LangSmith Deployment) provides managed infrastructure for running
   agents in production with assistants, threads, and runs.
-type: Contract
+kind: contract
 position: Consuming
 access: 3rd-Party
 image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
