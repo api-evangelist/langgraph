@@ -1,0 +1,189 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: LangSmith Deployment Control Plane API — Integrations (v1)
+  description: 'LangSmith Deployment Control Plane API — Integrations (v1). 4 operations. Lead operation: List Forge GitHub
+    Integrations. Self-contained Naftiko capability covering one Langgraph business surface.'
+  tags:
+  - Langgraph
+  - Integrations (v1)
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    LANGGRAPH_API_KEY: LANGGRAPH_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: langgraph-integrations-v1
+    baseUri: ''
+    description: LangSmith Deployment Control Plane API — Integrations (v1) business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: v1-integrations-forge-github-install
+      path: /v1/integrations/forge/github/install
+      operations:
+      - name: listforgegithubintegrationsv1integrationsforgegithubinstallget
+        method: GET
+        description: List Forge GitHub Integrations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: v1-integrations-forge-github-integration_id-repos
+      path: /v1/integrations/forge/github/{integration_id}/repos
+      operations:
+      - name: listforgegithubrepositoriesv1integrationsforgegithubintegrationidreposget
+        method: GET
+        description: List Forge GitHub Repositories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: integration_id
+          in: path
+          type: string
+          description: Forge GitHub integration ID.
+          required: true
+    - name: v1-integrations-github-install
+      path: /v1/integrations/github/install
+      operations:
+      - name: listgithubintegrationsv1integrationsgithubinstallget
+        method: GET
+        description: List GitHub Integrations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: v1-integrations-github-integration_id-repos
+      path: /v1/integrations/github/{integration_id}/repos
+      operations:
+      - name: listgithubrepositoriesv1integrationsgithubintegrationidreposget
+        method: GET
+        description: List GitHub Repositories
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: integration_id
+          in: path
+          type: string
+          description: GitHub integration ID.
+          required: true
+    authentication:
+      type: apikey
+      key: X-Api-Key
+      value: '{{env.LANGGRAPH_API_KEY}}'
+      placement: header
+  exposes:
+  - type: rest
+    namespace: langgraph-integrations-v1-rest
+    port: 8080
+    description: REST adapter for LangSmith Deployment Control Plane API — Integrations (v1). One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/v1/integrations/forge/github/install
+      name: v1-integrations-forge-github-install
+      description: REST surface for v1-integrations-forge-github-install.
+      operations:
+      - method: GET
+        name: listforgegithubintegrationsv1integrationsforgegithubinstallget
+        description: List Forge GitHub Integrations
+        call: langgraph-integrations-v1.listforgegithubintegrationsv1integrationsforgegithubinstallget
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v1/integrations/forge/github/{integration-id}/repos
+      name: v1-integrations-forge-github-integration-id-repos
+      description: REST surface for v1-integrations-forge-github-integration_id-repos.
+      operations:
+      - method: GET
+        name: listforgegithubrepositoriesv1integrationsforgegithubintegrationidreposget
+        description: List Forge GitHub Repositories
+        call: langgraph-integrations-v1.listforgegithubrepositoriesv1integrationsforgegithubintegrationidreposget
+        with:
+          integration_id: rest.integration_id
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v1/integrations/github/install
+      name: v1-integrations-github-install
+      description: REST surface for v1-integrations-github-install.
+      operations:
+      - method: GET
+        name: listgithubintegrationsv1integrationsgithubinstallget
+        description: List GitHub Integrations
+        call: langgraph-integrations-v1.listgithubintegrationsv1integrationsgithubinstallget
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v1/integrations/github/{integration-id}/repos
+      name: v1-integrations-github-integration-id-repos
+      description: REST surface for v1-integrations-github-integration_id-repos.
+      operations:
+      - method: GET
+        name: listgithubrepositoriesv1integrationsgithubintegrationidreposget
+        description: List GitHub Repositories
+        call: langgraph-integrations-v1.listgithubrepositoriesv1integrationsgithubintegrationidreposget
+        with:
+          integration_id: rest.integration_id
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: langgraph-integrations-v1-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for LangSmith Deployment Control Plane API — Integrations (v1). One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: list-forge-github-integrations
+      description: List Forge GitHub Integrations
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-integrations-v1.listforgegithubintegrationsv1integrationsforgegithubinstallget
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-forge-github-repositories
+      description: List Forge GitHub Repositories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-integrations-v1.listforgegithubrepositoriesv1integrationsforgegithubintegrationidreposget
+      with:
+        integration_id: tools.integration_id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-github-integrations
+      description: List GitHub Integrations
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-integrations-v1.listgithubintegrationsv1integrationsgithubinstallget
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-github-repositories
+      description: List GitHub Repositories
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-integrations-v1.listgithubrepositoriesv1integrationsgithubintegrationidreposget
+      with:
+        integration_id: tools.integration_id
+      outputParameters:
+      - type: object
+        mapping: $.

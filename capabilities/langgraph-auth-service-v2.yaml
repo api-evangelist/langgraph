@@ -1,0 +1,811 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: LangSmith Deployment Control Plane API — Auth Service (v2)
+  description: 'LangSmith Deployment Control Plane API — Auth Service (v2). 18 operations. Lead operation: Authenticate. Self-contained
+    Naftiko capability covering one Langgraph business surface.'
+  tags:
+  - Langgraph
+  - Auth Service (v2)
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    LANGGRAPH_API_KEY: LANGGRAPH_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: langgraph-auth-service-v2
+    baseUri: ''
+    description: LangSmith Deployment Control Plane API — Auth Service (v2) business capability. Self-contained, no shared
+      references.
+    resources:
+    - name: v2-auth-authenticate
+      path: /v2/auth/authenticate
+      operations:
+      - name: authenticatev2authauthenticatepost
+        method: POST
+        description: Authenticate
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: v2-auth-callback-provider_id
+      path: /v2/auth/callback/{provider_id}
+      operations:
+      - name: oauthcallbackgetv2authcallbackprovideridget
+        method: GET
+        description: Oauth Callback Get
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: path
+          type: string
+          required: true
+        - name: code
+          in: query
+          type: string
+          description: Authorization code from OAuth provider
+        - name: state
+          in: query
+          type: string
+          description: State parameter containing auth_id
+        - name: error
+          in: query
+          type: string
+          description: Error code from OAuth provider
+        - name: error_description
+          in: query
+          type: string
+          description: Error description from OAuth provider
+      - name: oauthcallbackv2authcallbackprovideridpost
+        method: POST
+        description: Oauth Callback
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: path
+          type: string
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: v2-auth-providers
+      path: /v2/auth/providers
+      operations:
+      - name: listoauthprovidersv2authprovidersget
+        method: GET
+        description: List Oauth Providers
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+      - name: createoauthproviderv2authproviderspost
+        method: POST
+        description: Create Oauth Provider
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: v2-auth-providers-mcp-discover
+      path: /v2/auth/providers/mcp-discover
+      operations:
+      - name: createmcpoauthproviderv2authprovidersmcpdiscoverpost
+        method: POST
+        description: Create Mcp Oauth Provider
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: v2-auth-providers-provider_id
+      path: /v2/auth/providers/{provider_id}
+      operations:
+      - name: getoauthproviderv2authprovidersprovideridget
+        method: GET
+        description: Get Oauth Provider
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: path
+          type: string
+          description: OAuth provider ID
+          required: true
+      - name: updateoauthproviderv2authprovidersprovideridpatch
+        method: PATCH
+        description: Update Oauth Provider
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: path
+          type: string
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+      - name: deleteoauthproviderv2authprovidersprovideriddelete
+        method: DELETE
+        description: Delete Oauth Provider
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: path
+          type: string
+          required: true
+    - name: v2-auth-setup-provider_id
+      path: /v2/auth/setup/{provider_id}
+      operations:
+      - name: oauthsetupcallbackv2authsetupprovideridget
+        method: GET
+        description: Oauth Setup Callback
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: path
+          type: string
+          required: true
+        - name: code
+          in: query
+          type: string
+          description: Authorization code from OAuth provider
+        - name: state
+          in: query
+          type: string
+          description: State parameter containing auth_id
+        - name: setup_action
+          in: query
+          type: string
+          description: Setup action from GitHub App
+        - name: installation_id
+          in: query
+          type: integer
+          description: GitHub App installation ID
+        - name: error
+          in: query
+          type: string
+          description: Error code from OAuth provider
+        - name: error_description
+          in: query
+          type: string
+          description: Error description from OAuth provider
+    - name: v2-auth-tokens
+      path: /v2/auth/tokens
+      operations:
+      - name: listoauthtokensforuserv2authtokensget
+        method: GET
+        description: List Oauth Tokens For User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: query
+          type: string
+          description: OAuth provider ID
+      - name: deleteoauthtokensforuserv2authtokensdelete
+        method: DELETE
+        description: Delete Oauth Tokens For User
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: query
+          type: string
+          description: OAuth provider ID to revoke for current user
+          required: true
+    - name: v2-auth-tokens-exists
+      path: /v2/auth/tokens/exists
+      operations:
+      - name: checkoauthtokenexistsv2authtokensexistsget
+        method: GET
+        description: Check Oauth Token Exists
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: provider_id
+          in: query
+          type: string
+          description: OAuth provider ID
+          required: true
+    - name: v2-auth-tokens-workspace-slack
+      path: /v2/auth/tokens/workspace/slack
+      operations:
+      - name: revokeallslacktokensforworkspacev2authtokensworkspaceslackdelete
+        method: DELETE
+        description: Revoke All Slack Tokens For Workspace
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: v2-auth-tokens-workspace-slack-exists
+      path: /v2/auth/tokens/workspace/slack/exists
+      operations:
+      - name: checkworkspaceslacktokensexistv2authtokensworkspaceslackexistsget
+        method: GET
+        description: Check Workspace Slack Tokens Exist
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: v2-auth-tokens-token_id
+      path: /v2/auth/tokens/{token_id}
+      operations:
+      - name: deletesingleoauthtokenv2authtokenstokeniddelete
+        method: DELETE
+        description: Delete Single Oauth Token
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: token_id
+          in: path
+          type: string
+          required: true
+    - name: v2-auth-tokens-token_id-metadata
+      path: /v2/auth/tokens/{token_id}/metadata
+      operations:
+      - name: updatetokenlabelv2authtokenstokenidmetadatapatch
+        method: PATCH
+        description: Update Token Label
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: token_id
+          in: path
+          type: string
+          required: true
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: v2-auth-wait-auth_id
+      path: /v2/auth/wait/{auth_id}
+      operations:
+      - name: waitforauthcompletionv2authwaitauthidget
+        method: GET
+        description: Wait For Auth Completion
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: auth_id
+          in: path
+          type: string
+          description: Authentication ID to wait for
+          required: true
+        - name: timeout
+          in: query
+          type: integer
+          description: 'Timeout in seconds (default: 30)'
+    authentication:
+      type: apikey
+      key: X-Api-Key
+      value: '{{env.LANGGRAPH_API_KEY}}'
+      placement: header
+  exposes:
+  - type: rest
+    namespace: langgraph-auth-service-v2-rest
+    port: 8080
+    description: REST adapter for LangSmith Deployment Control Plane API — Auth Service (v2). One Spectral-compliant resource
+      per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/v2/auth/authenticate
+      name: v2-auth-authenticate
+      description: REST surface for v2-auth-authenticate.
+      operations:
+      - method: POST
+        name: authenticatev2authauthenticatepost
+        description: Authenticate
+        call: langgraph-auth-service-v2.authenticatev2authauthenticatepost
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/callback/{provider-id}
+      name: v2-auth-callback-provider-id
+      description: REST surface for v2-auth-callback-provider_id.
+      operations:
+      - method: GET
+        name: oauthcallbackgetv2authcallbackprovideridget
+        description: Oauth Callback Get
+        call: langgraph-auth-service-v2.oauthcallbackgetv2authcallbackprovideridget
+        with:
+          provider_id: rest.provider_id
+          code: rest.code
+          state: rest.state
+          error: rest.error
+          error_description: rest.error_description
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: oauthcallbackv2authcallbackprovideridpost
+        description: Oauth Callback
+        call: langgraph-auth-service-v2.oauthcallbackv2authcallbackprovideridpost
+        with:
+          provider_id: rest.provider_id
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/providers
+      name: v2-auth-providers
+      description: REST surface for v2-auth-providers.
+      operations:
+      - method: GET
+        name: listoauthprovidersv2authprovidersget
+        description: List Oauth Providers
+        call: langgraph-auth-service-v2.listoauthprovidersv2authprovidersget
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: POST
+        name: createoauthproviderv2authproviderspost
+        description: Create Oauth Provider
+        call: langgraph-auth-service-v2.createoauthproviderv2authproviderspost
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/providers/mcp-discover
+      name: v2-auth-providers-mcp-discover
+      description: REST surface for v2-auth-providers-mcp-discover.
+      operations:
+      - method: POST
+        name: createmcpoauthproviderv2authprovidersmcpdiscoverpost
+        description: Create Mcp Oauth Provider
+        call: langgraph-auth-service-v2.createmcpoauthproviderv2authprovidersmcpdiscoverpost
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/providers/{provider-id}
+      name: v2-auth-providers-provider-id
+      description: REST surface for v2-auth-providers-provider_id.
+      operations:
+      - method: GET
+        name: getoauthproviderv2authprovidersprovideridget
+        description: Get Oauth Provider
+        call: langgraph-auth-service-v2.getoauthproviderv2authprovidersprovideridget
+        with:
+          provider_id: rest.provider_id
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: PATCH
+        name: updateoauthproviderv2authprovidersprovideridpatch
+        description: Update Oauth Provider
+        call: langgraph-auth-service-v2.updateoauthproviderv2authprovidersprovideridpatch
+        with:
+          provider_id: rest.provider_id
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: deleteoauthproviderv2authprovidersprovideriddelete
+        description: Delete Oauth Provider
+        call: langgraph-auth-service-v2.deleteoauthproviderv2authprovidersprovideriddelete
+        with:
+          provider_id: rest.provider_id
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/setup/{provider-id}
+      name: v2-auth-setup-provider-id
+      description: REST surface for v2-auth-setup-provider_id.
+      operations:
+      - method: GET
+        name: oauthsetupcallbackv2authsetupprovideridget
+        description: Oauth Setup Callback
+        call: langgraph-auth-service-v2.oauthsetupcallbackv2authsetupprovideridget
+        with:
+          provider_id: rest.provider_id
+          code: rest.code
+          state: rest.state
+          setup_action: rest.setup_action
+          installation_id: rest.installation_id
+          error: rest.error
+          error_description: rest.error_description
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/tokens
+      name: v2-auth-tokens
+      description: REST surface for v2-auth-tokens.
+      operations:
+      - method: GET
+        name: listoauthtokensforuserv2authtokensget
+        description: List Oauth Tokens For User
+        call: langgraph-auth-service-v2.listoauthtokensforuserv2authtokensget
+        with:
+          provider_id: rest.provider_id
+        outputParameters:
+        - type: object
+          mapping: $.
+      - method: DELETE
+        name: deleteoauthtokensforuserv2authtokensdelete
+        description: Delete Oauth Tokens For User
+        call: langgraph-auth-service-v2.deleteoauthtokensforuserv2authtokensdelete
+        with:
+          provider_id: rest.provider_id
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/tokens/exists
+      name: v2-auth-tokens-exists
+      description: REST surface for v2-auth-tokens-exists.
+      operations:
+      - method: GET
+        name: checkoauthtokenexistsv2authtokensexistsget
+        description: Check Oauth Token Exists
+        call: langgraph-auth-service-v2.checkoauthtokenexistsv2authtokensexistsget
+        with:
+          provider_id: rest.provider_id
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/tokens/workspace/slack
+      name: v2-auth-tokens-workspace-slack
+      description: REST surface for v2-auth-tokens-workspace-slack.
+      operations:
+      - method: DELETE
+        name: revokeallslacktokensforworkspacev2authtokensworkspaceslackdelete
+        description: Revoke All Slack Tokens For Workspace
+        call: langgraph-auth-service-v2.revokeallslacktokensforworkspacev2authtokensworkspaceslackdelete
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/tokens/workspace/slack/exists
+      name: v2-auth-tokens-workspace-slack-exists
+      description: REST surface for v2-auth-tokens-workspace-slack-exists.
+      operations:
+      - method: GET
+        name: checkworkspaceslacktokensexistv2authtokensworkspaceslackexistsget
+        description: Check Workspace Slack Tokens Exist
+        call: langgraph-auth-service-v2.checkworkspaceslacktokensexistv2authtokensworkspaceslackexistsget
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/tokens/{token-id}
+      name: v2-auth-tokens-token-id
+      description: REST surface for v2-auth-tokens-token_id.
+      operations:
+      - method: DELETE
+        name: deletesingleoauthtokenv2authtokenstokeniddelete
+        description: Delete Single Oauth Token
+        call: langgraph-auth-service-v2.deletesingleoauthtokenv2authtokenstokeniddelete
+        with:
+          token_id: rest.token_id
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/tokens/{token-id}/metadata
+      name: v2-auth-tokens-token-id-metadata
+      description: REST surface for v2-auth-tokens-token_id-metadata.
+      operations:
+      - method: PATCH
+        name: updatetokenlabelv2authtokenstokenidmetadatapatch
+        description: Update Token Label
+        call: langgraph-auth-service-v2.updatetokenlabelv2authtokenstokenidmetadatapatch
+        with:
+          token_id: rest.token_id
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/v2/auth/wait/{auth-id}
+      name: v2-auth-wait-auth-id
+      description: REST surface for v2-auth-wait-auth_id.
+      operations:
+      - method: GET
+        name: waitforauthcompletionv2authwaitauthidget
+        description: Wait For Auth Completion
+        call: langgraph-auth-service-v2.waitforauthcompletionv2authwaitauthidget
+        with:
+          auth_id: rest.auth_id
+          timeout: rest.timeout
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: langgraph-auth-service-v2-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for LangSmith Deployment Control Plane API — Auth Service (v2). One tool per consumed operation,
+      routed inline through this capability's consumes block.
+    tools:
+    - name: authenticate
+      description: Authenticate
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: langgraph-auth-service-v2.authenticatev2authauthenticatepost
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: oauth-callback-get
+      description: Oauth Callback Get
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.oauthcallbackgetv2authcallbackprovideridget
+      with:
+        provider_id: tools.provider_id
+        code: tools.code
+        state: tools.state
+        error: tools.error
+        error_description: tools.error_description
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: oauth-callback
+      description: Oauth Callback
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: langgraph-auth-service-v2.oauthcallbackv2authcallbackprovideridpost
+      with:
+        provider_id: tools.provider_id
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-oauth-providers
+      description: List Oauth Providers
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.listoauthprovidersv2authprovidersget
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: create-oauth-provider
+      description: Create Oauth Provider
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: langgraph-auth-service-v2.createoauthproviderv2authproviderspost
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: create-mcp-oauth-provider
+      description: Create Mcp Oauth Provider
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: langgraph-auth-service-v2.createmcpoauthproviderv2authprovidersmcpdiscoverpost
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-oauth-provider
+      description: Get Oauth Provider
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.getoauthproviderv2authprovidersprovideridget
+      with:
+        provider_id: tools.provider_id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: update-oauth-provider
+      description: Update Oauth Provider
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.updateoauthproviderv2authprovidersprovideridpatch
+      with:
+        provider_id: tools.provider_id
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: delete-oauth-provider
+      description: Delete Oauth Provider
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: langgraph-auth-service-v2.deleteoauthproviderv2authprovidersprovideriddelete
+      with:
+        provider_id: tools.provider_id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: oauth-setup-callback
+      description: Oauth Setup Callback
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.oauthsetupcallbackv2authsetupprovideridget
+      with:
+        provider_id: tools.provider_id
+        code: tools.code
+        state: tools.state
+        setup_action: tools.setup_action
+        installation_id: tools.installation_id
+        error: tools.error
+        error_description: tools.error_description
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-oauth-tokens-user
+      description: List Oauth Tokens For User
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.listoauthtokensforuserv2authtokensget
+      with:
+        provider_id: tools.provider_id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: delete-oauth-tokens-user
+      description: Delete Oauth Tokens For User
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: langgraph-auth-service-v2.deleteoauthtokensforuserv2authtokensdelete
+      with:
+        provider_id: tools.provider_id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: check-oauth-token-exists
+      description: Check Oauth Token Exists
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.checkoauthtokenexistsv2authtokensexistsget
+      with:
+        provider_id: tools.provider_id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: revoke-all-slack-tokens-workspace
+      description: Revoke All Slack Tokens For Workspace
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: langgraph-auth-service-v2.revokeallslacktokensforworkspacev2authtokensworkspaceslackdelete
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: check-workspace-slack-tokens-exist
+      description: Check Workspace Slack Tokens Exist
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.checkworkspaceslacktokensexistv2authtokensworkspaceslackexistsget
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: delete-single-oauth-token
+      description: Delete Single Oauth Token
+      hints:
+        readOnly: false
+        destructive: true
+        idempotent: true
+      call: langgraph-auth-service-v2.deletesingleoauthtokenv2authtokenstokeniddelete
+      with:
+        token_id: tools.token_id
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: update-token-label
+      description: Update Token Label
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.updatetokenlabelv2authtokenstokenidmetadatapatch
+      with:
+        token_id: tools.token_id
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: wait-auth-completion
+      description: Wait For Auth Completion
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: langgraph-auth-service-v2.waitforauthcompletionv2authwaitauthidget
+      with:
+        auth_id: tools.auth_id
+        timeout: tools.timeout
+      outputParameters:
+      - type: object
+        mapping: $.
