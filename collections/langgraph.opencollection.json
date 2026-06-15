@@ -1,0 +1,904 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "LangSmith Deployment Control Plane API",
+    "version": "0.1.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Integrations (v1)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List GitHub Integrations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/integrations/github/install"
+          },
+          "docs": "List available GitHub integrations for LangGraph Platfom Cloud SaaS."
+        },
+        {
+          "info": {
+            "name": "List GitHub Repositories",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/integrations/github/:integration_id/repos",
+            "params": [
+              {
+                "name": "integration_id",
+                "value": "",
+                "type": "path",
+                "description": "GitHub integration ID."
+              }
+            ]
+          },
+          "docs": "List available GitHub repositories for an integration that are available to deploy to LangSmith Deployment."
+        },
+        {
+          "info": {
+            "name": "List Forge GitHub Integrations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/integrations/forge/github/install"
+          },
+          "docs": "List available Forge GitHub integrations."
+        },
+        {
+          "info": {
+            "name": "List Forge GitHub Repositories",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/integrations/forge/github/:integration_id/repos",
+            "params": [
+              {
+                "name": "integration_id",
+                "value": "",
+                "type": "path",
+                "description": "Forge GitHub integration ID."
+              }
+            ]
+          },
+          "docs": "List available GitHub repositories for a Forge integration."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Deployments (v2)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List Deployments",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/deployments",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of resources to return."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Pagination offset. Pass this value to subsequent requests to fetch the next page of resources."
+              },
+              {
+                "name": "name_contains",
+                "value": "",
+                "type": "query",
+                "description": "Name of the deployment to filter by."
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "`status` of the deployment to filter by."
+              },
+              {
+                "name": "remote_reconciled",
+                "value": "",
+                "type": "query",
+                "description": "Flag to filter by remote reconciled deployments."
+              },
+              {
+                "name": "tag_value_ids",
+                "value": "",
+                "type": "query",
+                "description": "Comma separated list of tag value IDs of the deployment to filter by."
+              },
+              {
+                "name": "image_version",
+                "value": "",
+                "type": "query",
+                "description": "Image version to filter by."
+              },
+              {
+                "name": "deployment_type",
+                "value": "",
+                "type": "query",
+                "description": "Deployment type to filter by."
+              },
+              {
+                "name": "deployment_ids",
+                "value": "",
+                "type": "query",
+                "description": "Comma separated list of deployment IDs to filter by."
+              }
+            ]
+          },
+          "docs": "List all deployments."
+        },
+        {
+          "info": {
+            "name": "Create Deployment",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/deployments",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a new deployment."
+        },
+        {
+          "info": {
+            "name": "Delete Deployments",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/deployments",
+            "params": [
+              {
+                "name": "deployment_ids",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Delete multiple deployments with partial success support.\n\nReturns:\n    - 200: All deployments deleted successfully\n    - 207: Some deployments deleted successfully, some failed"
+        },
+        {
+          "info": {
+            "name": "Get Deployment",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a deployment by ID."
+        },
+        {
+          "info": {
+            "name": "Patch Deployment",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Patch a deployment by ID."
+        },
+        {
+          "info": {
+            "name": "Delete Deployment",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "delete_tracing_project",
+                "value": "",
+                "type": "query",
+                "description": "Optionally delete tracing project for the deployment."
+              }
+            ]
+          },
+          "docs": "Delete a deployment by ID."
+        },
+        {
+          "info": {
+            "name": "List Revisions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id/revisions",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of resources to return."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Pagination offset. Pass this value to subsequent requests to fetch the next page of resources."
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Comma separated list of revision `status` (CREATING, QUEUED, AWAITING_BUILD, BUILDING, AWAITING_DEPLOY, DEPLOYING, CREATE_FAILED, BUILD_FAILED, DEPLOY_FAILED, DEPLOYED, SKIPPED, INTERRUPTED, UNKNOWN) fields to filter by."
+              },
+              {
+                "name": "remote_reconciled",
+                "value": "",
+                "type": "query",
+                "description": "Flag to filter by remote reconciled revisions."
+              }
+            ]
+          },
+          "docs": "List all revisions for a deployment."
+        },
+        {
+          "info": {
+            "name": "Get Revision",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id/revisions/:revision_id",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "revision_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a revision by ID for a deployment."
+        },
+        {
+          "info": {
+            "name": "Redeploy Revision",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id/revisions/:revision_id/redeploy",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "revision_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Redeploy a specific revision ID."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Listeners (v2)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List Listeners",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/listeners",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of resources to return."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Pagination offset. Pass this value to subsequent requests to fetch the next page of resources."
+              }
+            ]
+          },
+          "docs": "List all listeners."
+        },
+        {
+          "info": {
+            "name": "Create Listener",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/listeners",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a listener.<br>\n<br>\nCreating a listener is only allowed for LangSmith organizations with self-hosted enterprise plans."
+        },
+        {
+          "info": {
+            "name": "Get Listener",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/listeners/:listener_id",
+            "params": [
+              {
+                "name": "listener_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a listener by ID."
+        },
+        {
+          "info": {
+            "name": "Patch Listener",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/v2/listeners/:listener_id",
+            "params": [
+              {
+                "name": "listener_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Patch a listener by ID."
+        },
+        {
+          "info": {
+            "name": "Delete Listener",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/listeners/:listener_id",
+            "params": [
+              {
+                "name": "listener_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a listener by ID."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Auth Service (v2)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List Oauth Providers",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/providers"
+          },
+          "docs": "List OAuth providers."
+        },
+        {
+          "info": {
+            "name": "Create Oauth Provider",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/auth/providers",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a new OAuth provider manually."
+        },
+        {
+          "info": {
+            "name": "Oauth Setup Callback",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/setup/:provider_id",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "code",
+                "value": "",
+                "type": "query",
+                "description": "Authorization code from OAuth provider"
+              },
+              {
+                "name": "state",
+                "value": "",
+                "type": "query",
+                "description": "State parameter containing auth_id"
+              },
+              {
+                "name": "setup_action",
+                "value": "",
+                "type": "query",
+                "description": "Setup action from GitHub App"
+              },
+              {
+                "name": "installation_id",
+                "value": "",
+                "type": "query",
+                "description": "GitHub App installation ID"
+              },
+              {
+                "name": "error",
+                "value": "",
+                "type": "query",
+                "description": "Error code from OAuth provider"
+              },
+              {
+                "name": "error_description",
+                "value": "",
+                "type": "query",
+                "description": "Error description from OAuth provider"
+              }
+            ]
+          },
+          "docs": "Handle OAuth setup callback redirect from GitHub Apps.\n\nThis endpoint handles the \"Setup URL\" callback from GitHub Apps, which is\ntriggered when a user installs or updates their GitHub App installation.\n\nFor \"update\" actions (user modified repo access via GitHub), we just show\na success page since no token exchange is needed.\n\nFor new installations with code/state, we process similar to the regular\nOAuth callback."
+        },
+        {
+          "info": {
+            "name": "Oauth Callback Get",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/callback/:provider_id",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "code",
+                "value": "",
+                "type": "query",
+                "description": "Authorization code from OAuth provider"
+              },
+              {
+                "name": "state",
+                "value": "",
+                "type": "query",
+                "description": "State parameter containing auth_id"
+              },
+              {
+                "name": "error",
+                "value": "",
+                "type": "query",
+                "description": "Error code from OAuth provider"
+              },
+              {
+                "name": "error_description",
+                "value": "",
+                "type": "query",
+                "description": "Error description from OAuth provider"
+              }
+            ]
+          },
+          "docs": "Handle OAuth callback redirect from OAuth providers.\n\nProcesses the OAuth token exchange, then redirects to the frontend callback\npage for a consistent UI experience."
+        },
+        {
+          "info": {
+            "name": "Oauth Callback",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/auth/callback/:provider_id",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Oauth Callback"
+        },
+        {
+          "info": {
+            "name": "Authenticate",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/auth/authenticate",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Get OAuth token or start authentication flow if needed."
+        },
+        {
+          "info": {
+            "name": "Wait For Auth Completion",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/wait/:auth_id",
+            "params": [
+              {
+                "name": "auth_id",
+                "value": "",
+                "type": "path",
+                "description": "Authentication ID to wait for"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query",
+                "description": "Timeout in seconds (default: 30)"
+              }
+            ]
+          },
+          "docs": "Wait for OAuth authentication completion."
+        },
+        {
+          "info": {
+            "name": "Create Mcp Oauth Provider",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/auth/providers/mcp-discover",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create an OAuth provider via MCP auto-discovery."
+        },
+        {
+          "info": {
+            "name": "Get Oauth Provider",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/providers/:provider_id",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "path",
+                "description": "OAuth provider ID"
+              }
+            ]
+          },
+          "docs": "Get a specific OAuth provider."
+        },
+        {
+          "info": {
+            "name": "Update Oauth Provider",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/v2/auth/providers/:provider_id",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Update an OAuth provider."
+        },
+        {
+          "info": {
+            "name": "Delete Oauth Provider",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/auth/providers/:provider_id",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete an OAuth provider."
+        },
+        {
+          "info": {
+            "name": "List Oauth Tokens For User",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/tokens",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "query",
+                "description": "OAuth provider ID"
+              }
+            ]
+          },
+          "docs": "List the calling user's tokens for a provider."
+        },
+        {
+          "info": {
+            "name": "Delete Oauth Tokens For User",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/auth/tokens",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "query",
+                "description": "OAuth provider ID to revoke for current user"
+              }
+            ]
+          },
+          "docs": "Delete all tokens for the current user for the given provider (across agents)."
+        },
+        {
+          "info": {
+            "name": "Update Token Label",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/v2/auth/tokens/:token_id/metadata",
+            "params": [
+              {
+                "name": "token_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Update a token's provider_account_label. Only the token owner can update."
+        },
+        {
+          "info": {
+            "name": "Delete Single Oauth Token",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/auth/tokens/:token_id",
+            "params": [
+              {
+                "name": "token_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a specific OAuth token, revoking it at the provider first.\n\nOnly the token owner can delete it."
+        },
+        {
+          "info": {
+            "name": "Check Oauth Token Exists",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/tokens/exists",
+            "params": [
+              {
+                "name": "provider_id",
+                "value": "",
+                "type": "query",
+                "description": "OAuth provider ID"
+              }
+            ]
+          },
+          "docs": "Return whether the current user has any tokens for a given provider (across agents)."
+        },
+        {
+          "info": {
+            "name": "Check Workspace Slack Tokens Exist",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/tokens/workspace/slack/exists"
+          },
+          "docs": "Check if the workspace has any Slack tokens."
+        },
+        {
+          "info": {
+            "name": "Revoke All Slack Tokens For Workspace",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/auth/tokens/workspace/slack"
+          },
+          "docs": "Revoke ALL Slack tokens for the workspace. Admin-only action that disconnects Slack entirely.\n\nThis is a destructive operation that:\n- Revokes all Slack tokens on Slack's side for all users in the workspace\n- Deletes all Slack tokens from the database"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Agent Connections (v2)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List Connections",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/auth/agents/:agent_id/connections",
+            "params": [
+              {
+                "name": "agent_id",
+                "value": "",
+                "type": "path",
+                "description": "Agent ID"
+              }
+            ]
+          },
+          "docs": "List Connections"
+        },
+        {
+          "info": {
+            "name": "Create Connection",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/auth/agents/:agent_id/connections",
+            "params": [
+              {
+                "name": "agent_id",
+                "value": "",
+                "type": "path",
+                "description": "Agent ID"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create Connection"
+        },
+        {
+          "info": {
+            "name": "Remove Connection",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/auth/agents/:agent_id/connections/:connection_id",
+            "params": [
+              {
+                "name": "agent_id",
+                "value": "",
+                "type": "path",
+                "description": "Agent ID"
+              },
+              {
+                "name": "connection_id",
+                "value": "",
+                "type": "path",
+                "description": "Connection ID"
+              }
+            ]
+          },
+          "docs": "Remove Connection"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
