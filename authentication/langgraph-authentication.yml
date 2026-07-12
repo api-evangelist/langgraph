@@ -1,0 +1,15 @@
+generated: '2026-07-11'
+method: derived
+source: openapi/langgraph-openapi.json
+summary:
+  types:
+  - apiKey
+  api_key_in:
+  - header
+schemes:
+- name: LangSmith API Key
+  type: apiKey
+  in: header
+  parameter: X-Api-Key
+  sources:
+  - openapi/langgraph-openapi.json

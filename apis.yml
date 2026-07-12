@@ -45,6 +45,10 @@ apis:
       - type: Authentication
         url: https://docs.langchain.com/langsmith/create-account-api-key
 common:
+  - type: DomainSecurity
+    url: security/langgraph-domain-security.yml
+  - type: Authentication
+    url: authentication/langgraph-authentication.yml
   - name: LangGraph
     url: https://www.langchain.com/langgraph
     type: Website
@@ -59,6 +63,8 @@ common:
     type: ParentCompany
   - type: Integrations
     url: https://docs.langchain.com/oss/python/integrations/providers/overview
+  - url: https://www.langchain.com/blog/rss.xml
+    type: Blog
 integrations:
   - name: light
   - name: dark
