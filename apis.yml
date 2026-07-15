@@ -45,6 +45,8 @@ apis:
       - type: Authentication
         url: https://docs.langchain.com/langsmith/create-account-api-key
 common:
+  - type: AgenticAccess
+    url: agentic-access/langgraph-agentic-access.yml
   - type: DomainSecurity
     url: security/langgraph-domain-security.yml
   - type: Authentication
