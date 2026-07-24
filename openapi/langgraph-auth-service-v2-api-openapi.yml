@@ -1,0 +1,1115 @@
+openapi: 3.1.0
+info:
+  title: LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Auth Service (v2) API
+  description: 'The LangSmith Deployment Control Plane API is used to programmatically create and manage
+
+    Agent Server deployments. For example, the APIs can be orchestrated to
+
+    create custom CI/CD workflows.
+
+
+    ## Host
+
+    https://api.host.langchain.com
+
+
+    ## Authentication
+
+    To authenticate with the LangSmith Deployment Control Plane API, set the `X-Api-Key` header
+
+    to a valid [LangSmith API key](https://docs.langchain.com/langsmith/create-account-api-key#create-an-api-key).
+
+
+    ## Versioning
+
+    Each endpoint path is prefixed with a version (e.g. `v1`, `v2`).
+
+
+    ## Quick Start
+
+    1. Call `POST /v2/deployments` to create a new Deployment. The response body contains the Deployment ID (`id`) and the ID of the latest (and first) revision (`latest_revision_id`).
+
+    1. Call `GET /v2/deployments/{deployment_id}` to retrieve the Deployment. Set `deployment_id` in the URL to the value of Deployment ID (`id`).
+
+    1. Poll for revision `status` until `status` is `DEPLOYED` by calling `GET /v2/deployments/{deployment_id}/revisions/{latest_revision_id}`.
+
+    1. Call `PATCH /v2/deployments/{deployment_id}` to update the deployment.
+
+    '
+  version: 0.1.0
+tags:
+- name: Auth Service (v2)
+paths:
+  /v2/auth/providers:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: List Oauth Providers
+      description: List OAuth providers.
+      operationId: list_oauth_providers_v2_auth_providers_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/OAuthProviderResponse'
+                type: array
+                title: Response List Oauth Providers V2 Auth Providers Get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+    post:
+      tags:
+      - Auth Service (v2)
+      summary: Create Oauth Provider
+      description: Create a new OAuth provider manually.
+      operationId: create_oauth_provider_v2_auth_providers_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthProviderCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProviderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+  /v2/auth/setup/{provider_id}:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: Oauth Setup Callback
+      description: 'Handle OAuth setup callback redirect from GitHub Apps.
+
+
+        This endpoint handles the "Setup URL" callback from GitHub Apps, which is
+
+        triggered when a user installs or updates their GitHub App installation.
+
+
+        For "update" actions (user modified repo access via GitHub), we just show
+
+        a success page since no token exchange is needed.
+
+
+        For new installations with code/state, we process similar to the regular
+
+        OAuth callback.'
+      operationId: oauth_setup_callback_v2_auth_setup__provider_id__get
+      parameters:
+      - name: provider_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Provider Id
+      - name: code
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Authorization code from OAuth provider
+          title: Code
+        description: Authorization code from OAuth provider
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          description: State parameter containing auth_id
+          title: State
+        description: State parameter containing auth_id
+      - name: setup_action
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Setup action from GitHub App
+          title: Setup Action
+        description: Setup action from GitHub App
+      - name: installation_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: GitHub App installation ID
+          title: Installation Id
+        description: GitHub App installation ID
+      - name: error
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Error code from OAuth provider
+          title: Error
+        description: Error code from OAuth provider
+      - name: error_description
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Error description from OAuth provider
+          title: Error Description
+        description: Error description from OAuth provider
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/callback/{provider_id}:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: Oauth Callback Get
+      description: 'Handle OAuth callback redirect from OAuth providers.
+
+
+        Processes the OAuth token exchange, then redirects to the frontend callback
+
+        page for a consistent UI experience.'
+      operationId: oauth_callback_get_v2_auth_callback__provider_id__get
+      security:
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Provider Id
+      - name: code
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Authorization code from OAuth provider
+          title: Code
+        description: Authorization code from OAuth provider
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          description: State parameter containing auth_id
+          title: State
+        description: State parameter containing auth_id
+      - name: error
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Error code from OAuth provider
+          title: Error
+        description: Error code from OAuth provider
+      - name: error_description
+        in: query
+        required: false
+        schema:
+          type: string
+          description: Error description from OAuth provider
+          title: Error Description
+        description: Error description from OAuth provider
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Auth Service (v2)
+      summary: Oauth Callback
+      operationId: oauth_callback_v2_auth_callback__provider_id__post
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Provider Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthFinalizeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/authenticate:
+    post:
+      tags:
+      - Auth Service (v2)
+      summary: Authenticate
+      description: Get OAuth token or start authentication flow if needed.
+      operationId: authenticate_v2_auth_authenticate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthAuthenticateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthAuthenticateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+  /v2/auth/wait/{auth_id}:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: Wait For Auth Completion
+      description: Wait for OAuth authentication completion.
+      operationId: wait_for_auth_completion_v2_auth_wait__auth_id__get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: auth_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Authentication ID to wait for
+          title: Auth Id
+        description: Authentication ID to wait for
+      - name: timeout
+        in: query
+        required: false
+        schema:
+          type: integer
+          description: 'Timeout in seconds (default: 30)'
+          default: 30
+          title: Timeout
+        description: 'Timeout in seconds (default: 30)'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthWaitResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/providers/mcp-discover:
+    post:
+      tags:
+      - Auth Service (v2)
+      summary: Create Mcp Oauth Provider
+      description: Create an OAuth provider via MCP auto-discovery.
+      operationId: create_mcp_oauth_provider_v2_auth_providers_mcp_discover_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MCPOAuthProviderCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProviderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+  /v2/auth/providers/{provider_id}:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: Get Oauth Provider
+      description: Get a specific OAuth provider.
+      operationId: get_oauth_provider_v2_auth_providers__provider_id__get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: OAuth provider ID
+          title: Provider Id
+        description: OAuth provider ID
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProviderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - Auth Service (v2)
+      summary: Update Oauth Provider
+      description: Update an OAuth provider.
+      operationId: update_oauth_provider_v2_auth_providers__provider_id__patch
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Provider Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthProviderUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProviderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Auth Service (v2)
+      summary: Delete Oauth Provider
+      description: Delete an OAuth provider.
+      operationId: delete_oauth_provider_v2_auth_providers__provider_id__delete
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Provider Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/tokens:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: List Oauth Tokens For User
+      description: List the calling user's tokens for a provider.
+      operationId: list_oauth_tokens_for_user_v2_auth_tokens_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: OAuth provider ID
+          title: Provider Id
+        description: OAuth provider ID
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OAuthTokenSummary'
+                title: Response List Oauth Tokens For User V2 Auth Tokens Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Auth Service (v2)
+      summary: Delete Oauth Tokens For User
+      description: Delete all tokens for the current user for the given provider (across agents).
+      operationId: delete_oauth_tokens_for_user_v2_auth_tokens_delete
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: query
+        required: true
+        schema:
+          type: string
+          description: OAuth provider ID to revoke for current user
+          title: Provider Id
+        description: OAuth provider ID to revoke for current user
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/tokens/{token_id}/metadata:
+    patch:
+      tags:
+      - Auth Service (v2)
+      summary: Update Token Label
+      description: Update a token's provider_account_label. Only the token owner can update.
+      operationId: update_token_label_v2_auth_tokens__token_id__metadata_patch
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: token_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Token Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthTokenUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTokenSummary'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/tokens/{token_id}:
+    delete:
+      tags:
+      - Auth Service (v2)
+      summary: Delete Single Oauth Token
+      description: 'Delete a specific OAuth token, revoking it at the provider first.
+
+
+        Only the token owner can delete it.'
+      operationId: delete_single_oauth_token_v2_auth_tokens__token_id__delete
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: token_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Token Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/tokens/exists:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: Check Oauth Token Exists
+      description: Return whether the current user has any tokens for a given provider (across agents).
+      operationId: check_oauth_token_exists_v2_auth_tokens_exists_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: query
+        required: true
+        schema:
+          type: string
+          description: OAuth provider ID
+          title: Provider Id
+        description: OAuth provider ID
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTokenStatusResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/tokens/workspace/slack/exists:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: Check Workspace Slack Tokens Exist
+      description: Check if the workspace has any Slack tokens.
+      operationId: check_workspace_slack_tokens_exist_v2_auth_tokens_workspace_slack_exists_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTokenStatusResponse'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+  /v2/auth/tokens/workspace/slack:
+    delete:
+      tags:
+      - Auth Service (v2)
+      summary: Revoke All Slack Tokens For Workspace
+      description: 'Revoke ALL Slack tokens for the workspace. Admin-only action that disconnects Slack entirely.
+
+
+        This is a destructive operation that:
+
+        - Revokes all Slack tokens on Slack''s side for all users in the workspace
+
+        - Deletes all Slack tokens from the database'
+      operationId: revoke_all_slack_tokens_for_workspace_v2_auth_tokens_workspace_slack_delete
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+components:
+  schemas:
+    AuthWaitStatus:
+      type: string
+      enum:
+      - completed
+      - pending
+      - timeout
+      - not_found
+      title: AuthWaitStatus
+      description: Valid auth wait status values.
+    AuthStatus:
+      type: string
+      enum:
+      - completed
+      - pending
+      - connection_required
+      - token_expired
+      title: AuthStatus
+      description: Valid authentication status values.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    MCPOAuthProviderCreateRequest:
+      properties:
+        provider_id:
+          type: string
+          title: Provider Id
+        name:
+          type: string
+          title: Name
+        mcp_server_url:
+          type: string
+          title: Mcp Server Url
+      type: object
+      required:
+      - provider_id
+      - name
+      - mcp_server_url
+      title: MCPOAuthProviderCreateRequest
+      description: Request model for creating OAuth provider via MCP auto-discovery.
+    OAuthProviderUpdateRequest:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        client_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Id
+        client_secret:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Secret
+        auth_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Auth Url
+        token_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token Url
+        uses_pkce:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Uses Pkce
+        code_challenge_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Code Challenge Method
+      type: object
+      title: OAuthProviderUpdateRequest
+      description: Request model for updating OAuth provider.
+    OAuthFinalizeRequest:
+      properties:
+        code:
+          type: string
+          title: Code
+        state:
+          type: string
+          title: State
+      type: object
+      required:
+      - code
+      - state
+      title: OAuthFinalizeRequest
+      description: Request model for frontend-bridged OAuth callback finalization.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    OAuthTokenUpdateRequest:
+      properties:
+        provider_account_label:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Provider Account Label
+        is_default:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Default
+      type: object
+      title: OAuthTokenUpdateRequest
+      description: Request model for updating a token's metadata.
+    OAuthTokenStatusResponse:
+      properties:
+        has_token:
+          type: boolean
+          title: Has Token
+      type: object
+      required:
+      - has_token
+      title: OAuthTokenStatusResponse
+      description: Simple status indicating if a user has a token for a provider/agent.
+    OAuthProviderResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        organization_id:
+          type: string
+          title: Organization Id
+        provider_id:
+          type: string
+          title: Provider Id
+        name:
+          type: string
+          title: Name
+        client_id:
+          type: string
+          title: Client Id
+        auth_url:
+          type: string
+          title: Auth Url
+        token_url:
+          type: string
+          title: Token Url
+        uses_pkce:
+          type: boolean
+          title: Uses Pkce
+        code_challenge_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Code Challenge Method
+        provider_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Provider Type
+        mcp_server_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mcp Server Url
+        token_endpoint_auth_method:
+          type: string
+          title: Token Endpoint Auth Method
+          default: client_secret_post
+        is_dynamic_client:
+          type: boolean
+          title: Is Dynamic Client
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - organization_id
+      - provider_id
+      - name
+      - client_id
+      - auth_url
+      - token_url
+      - uses_pkce
+      - code_challenge_method
+      - created_at
+      - updated_at
+      title: OAuthProviderResponse
+      description: Response model for OAuth provider.
+    OAuthProviderCreateRequest:
+      properties:
+        provider_id:
+          type: string
+          title: Provider Id
+        name:
+          type: string
+          title: Name
+        client_id:
+          type: string
+          title: Client Id
+        client_secret:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Secret
+        auth_url:
+          type: string
+          title: Auth Url
+        token_url:
+          type: string
+          title: Token Url
+        uses_pkce:
+          type: boolean
+          title: Uses Pkce
+          default: false
+        code_challenge_method:
+          type: string
+          title: Code Challenge Method
+          default: S256
+        provider_type:
+          anyOf:
+          - type: string
+            enum:
+            - microsoft
+            - salesforce
+            - slack
+          - type: 'null'
+          title: Provider Type
+        token_endpoint_auth_method:
+          type: string
+          enum:
+          - none
+          - client_secret_basic
+          - client_secret_post
+          title: Token Endpoint Auth Method
+          default: client_secret_post
+      type: object
+      required:
+      - provider_id
+      - name
+      - client_id
+      - auth_url
+      - token_url
+      title: OAuthProviderCreateRequest
+      description: Request model for creating OAuth provider manually.
+    AuthWaitResponse:
+      properties:
+        status:
+          $ref: '#/components/schemas/AuthWaitStatus'
+        token:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token
+      type: object
+      required:
+      - status
+      title: AuthWaitResponse
+      description: Auth wait response.
+    AuthAuthenticateResponse:
+      properties:
+        status:
+          $ref: '#/components/schemas/AuthStatus'
+        url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Url
+        auth_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Auth Id
+        token:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token
+        user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - status
+      title: AuthAuthenticateResponse
+      description: Auth authenticate response.
+    OAuthTokenSummary:
+      properties:
+        id:
+          type: string
+          title: Id
+        provider_id:
+          type: string
+          title: Provider Id
+        provider_account_label:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Provider Account Label
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+          default: []
+        expires_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expires At
+        is_default:
+          type: boolean
+          title: Is Default
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - provider_id
+      - created_at
+      - updated_at
+      title: OAuthTokenSummary
+      description: Public-facing token summary — no sensitive data.
+    AuthAuthenticateRequest:
+      properties:
+        user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Id
+        ls_user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ls User Id
+        agent_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Id
+        provider:
+          type: string
+          title: Provider
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+        use_agent_builder_public_oauth:
+          type: boolean
+          title: Use Agent Builder Public Oauth
+          default: false
+          include_in_schema: false
+        force_new:
+          type: boolean
+          title: Force New
+          default: false
+        token_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Token Id
+        is_default:
+          type: boolean
+          title: Is Default
+          default: true
+      type: object
+      required:
+      - provider
+      - scopes
+      title: AuthAuthenticateRequest
+      description: Auth authenticate request.
+  securitySchemes:
+    LangSmith API Key:
+      type: apiKey
+      in: header
+      name: X-Api-Key
