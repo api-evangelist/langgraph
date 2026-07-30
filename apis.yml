@@ -5,9 +5,22 @@ description: >-
   primitives for greater control over agent behavior. LangGraph Platform (LangSmith Deployment) provides managed
   infrastructure for running agents in production with assistants, threads, and runs.
 kind: contract
+accessModel:
+  pricing: freemium
+  onboarding: self-serve
+  trial: false
+  try_now: true
+  public: false
+  label: Freemium · Self-serve signup
+  confidence: high
+  source:
+  - plans
+  - authentication
+  generated: '2026-07-22'
+  method: derived
 position: Consuming
 access: 3rd-Party
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/langgraph.png
 tags:
   - Agents
   - Artificial Intelligence
@@ -19,31 +32,87 @@ modified: '2026-05-19'
 url: https://raw.githubusercontent.com/api-evangelist/langgraph/refs/heads/main/apis.yml
 specificationVersion: '0.19'
 apis:
-  - aid: langgraph:control-plane
-    name: LangSmith Deployment Control Plane API
-    description: >-
-      The LangSmith Deployment Control Plane API is used to programmatically create and manage Agent Server deployments
-      for LangGraph Platform. The API can be orchestrated to create custom CI/CD workflows for deployments, revisions,
-      integrations (GitHub, Forge), authentication providers, and agent connections. Authentication uses the X-Api-Key
-      header.
-    humanURL: https://docs.langchain.com/langgraph-platform
-    baseURL: https://api.host.langchain.com
-    tags:
-      - Agents
-      - Deployment
-      - Control Plane
-      - CI/CD
-      - Authentication
-      - Integrations
-    properties:
-      - type: Documentation
-        url: https://docs.langchain.com/langgraph-platform
-      - type: OpenAPI
-        url: openapi/langgraph-openapi.json
-      - type: Repository
-        url: https://github.com/langchain-ai/langgraph
-      - type: Authentication
-        url: https://docs.langchain.com/langsmith/create-account-api-key
+- aid: langgraph:langgraph-agent-connections-v2-api
+  name: LangGraph Agent Connections (v2) API
+  description: >-
+    The Agent Connections (v2) API from LangGraph — 2 operation(s) for agent connections (v2).
+  humanURL: https://docs.langchain.com/langgraph-platform
+  baseURL: https://api.host.langchain.com
+  tags:
+  - Agent Connections (v2)
+  properties:
+  - type: OpenAPI
+    url: openapi/langgraph-agent-connections-v2-api-openapi.yml
+  - type: Documentation
+    url: https://docs.langchain.com/langgraph-platform
+  - type: Repository
+    url: https://github.com/langchain-ai/langgraph
+  - type: Authentication
+    url: https://docs.langchain.com/langsmith/create-account-api-key
+- aid: langgraph:langgraph-auth-service-v2-api
+  name: LangGraph Auth Service (v2) API
+  description: The Auth Service (v2) API from LangGraph — 13 operation(s) for auth service (v2).
+  humanURL: https://docs.langchain.com/langgraph-platform
+  baseURL: https://api.host.langchain.com
+  tags:
+  - Auth Service (v2)
+  properties:
+  - type: OpenAPI
+    url: openapi/langgraph-auth-service-v2-api-openapi.yml
+  - type: Documentation
+    url: https://docs.langchain.com/langgraph-platform
+  - type: Repository
+    url: https://github.com/langchain-ai/langgraph
+  - type: Authentication
+    url: https://docs.langchain.com/langsmith/create-account-api-key
+- aid: langgraph:langgraph-deployments-v2-api
+  name: LangGraph Deployments (v2) API
+  description: The Deployments (v2) API from LangGraph — 5 operation(s) for deployments (v2).
+  humanURL: https://docs.langchain.com/langgraph-platform
+  baseURL: https://api.host.langchain.com
+  tags:
+  - Deployments (v2)
+  properties:
+  - type: OpenAPI
+    url: openapi/langgraph-deployments-v2-api-openapi.yml
+  - type: Documentation
+    url: https://docs.langchain.com/langgraph-platform
+  - type: Repository
+    url: https://github.com/langchain-ai/langgraph
+  - type: Authentication
+    url: https://docs.langchain.com/langsmith/create-account-api-key
+- aid: langgraph:langgraph-integrations-v1-api
+  name: LangGraph Integrations (v1) API
+  description: The Integrations (v1) API from LangGraph — 4 operation(s) for integrations (v1).
+  humanURL: https://docs.langchain.com/langgraph-platform
+  baseURL: https://api.host.langchain.com
+  tags:
+  - Integrations (v1)
+  properties:
+  - type: OpenAPI
+    url: openapi/langgraph-integrations-v1-api-openapi.yml
+  - type: Documentation
+    url: https://docs.langchain.com/langgraph-platform
+  - type: Repository
+    url: https://github.com/langchain-ai/langgraph
+  - type: Authentication
+    url: https://docs.langchain.com/langsmith/create-account-api-key
+- aid: langgraph:langgraph-listeners-v2-api
+  name: LangGraph Listeners (v2) API
+  description: The Listeners (v2) API from LangGraph — 2 operation(s) for listeners (v2).
+  humanURL: https://docs.langchain.com/langgraph-platform
+  baseURL: https://api.host.langchain.com
+  tags:
+  - Listeners (v2)
+  properties:
+  - type: OpenAPI
+    url: openapi/langgraph-listeners-v2-api-openapi.yml
+  - type: Documentation
+    url: https://docs.langchain.com/langgraph-platform
+  - type: Repository
+    url: https://github.com/langchain-ai/langgraph
+  - type: Authentication
+    url: https://docs.langchain.com/langsmith/create-account-api-key
 common:
   - type: AgenticAccess
     url: agentic-access/langgraph-agentic-access.yml
