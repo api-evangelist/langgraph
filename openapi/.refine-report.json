@@ -1,0 +1,22 @@
+{
+  "provider": "langgraph",
+  "sources": [
+    "langgraph-agent-connections-v2-api-openapi.yml",
+    "langgraph-auth-service-v2-api-openapi.yml",
+    "langgraph-deployments-v2-api-openapi.yml",
+    "langgraph-integrations-v1-api-openapi.yml",
+    "langgraph-listeners-v2-api-openapi.yml"
+  ],
+  "outputs": [
+    "langgraph-agent-connections-v2-api-openapi.yml",
+    "langgraph-auth-service-v2-api-openapi.yml",
+    "langgraph-deployments-v2-api-openapi.yml",
+    "langgraph-integrations-v1-api-openapi.yml",
+    "langgraph-listeners-v2-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
