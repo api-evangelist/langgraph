@@ -1,0 +1,78 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Integrations (v1) API",
+    "version": "0.1.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Integrations (v1)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List GitHub Integrations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/integrations/github/install"
+          },
+          "docs": "List available GitHub integrations for LangGraph Platfom Cloud SaaS."
+        },
+        {
+          "info": {
+            "name": "List GitHub Repositories",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/integrations/github/:integration_id/repos",
+            "params": [
+              {
+                "name": "integration_id",
+                "value": "",
+                "type": "path",
+                "description": "GitHub integration ID."
+              }
+            ]
+          },
+          "docs": "List available GitHub repositories for an integration that are available to deploy to LangSmith Deployment."
+        },
+        {
+          "info": {
+            "name": "List Forge GitHub Integrations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/integrations/forge/github/install"
+          },
+          "docs": "List available Forge GitHub integrations."
+        },
+        {
+          "info": {
+            "name": "List Forge GitHub Repositories",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/integrations/forge/github/:integration_id/repos",
+            "params": [
+              {
+                "name": "integration_id",
+                "value": "",
+                "type": "path",
+                "description": "Forge GitHub integration ID."
+              }
+            ]
+          },
+          "docs": "List available GitHub repositories for a Forge integration."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

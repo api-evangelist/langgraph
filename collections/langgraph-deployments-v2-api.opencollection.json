@@ -1,0 +1,270 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Deployments (v2) API",
+    "version": "0.1.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Deployments (v2)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List Deployments",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/deployments",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of resources to return."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Pagination offset. Pass this value to subsequent requests to fetch the next page of resources."
+              },
+              {
+                "name": "name_contains",
+                "value": "",
+                "type": "query",
+                "description": "Name of the deployment to filter by."
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "`status` of the deployment to filter by."
+              },
+              {
+                "name": "remote_reconciled",
+                "value": "",
+                "type": "query",
+                "description": "Flag to filter by remote reconciled deployments."
+              },
+              {
+                "name": "tag_value_ids",
+                "value": "",
+                "type": "query",
+                "description": "Comma separated list of tag value IDs of the deployment to filter by."
+              },
+              {
+                "name": "image_version",
+                "value": "",
+                "type": "query",
+                "description": "Image version to filter by."
+              },
+              {
+                "name": "deployment_type",
+                "value": "",
+                "type": "query",
+                "description": "Deployment type to filter by."
+              },
+              {
+                "name": "deployment_ids",
+                "value": "",
+                "type": "query",
+                "description": "Comma separated list of deployment IDs to filter by."
+              }
+            ]
+          },
+          "docs": "List all deployments."
+        },
+        {
+          "info": {
+            "name": "Create Deployment",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/deployments",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a new deployment."
+        },
+        {
+          "info": {
+            "name": "Delete Deployments",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/deployments",
+            "params": [
+              {
+                "name": "deployment_ids",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Delete multiple deployments with partial success support.\n\nReturns:\n    - 200: All deployments deleted successfully\n    - 207: Some deployments deleted successfully, some failed"
+        },
+        {
+          "info": {
+            "name": "Get Deployment",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a deployment by ID."
+        },
+        {
+          "info": {
+            "name": "Patch Deployment",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Patch a deployment by ID."
+        },
+        {
+          "info": {
+            "name": "Delete Deployment",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "delete_tracing_project",
+                "value": "",
+                "type": "query",
+                "description": "Optionally delete tracing project for the deployment."
+              }
+            ]
+          },
+          "docs": "Delete a deployment by ID."
+        },
+        {
+          "info": {
+            "name": "List Revisions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id/revisions",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of resources to return."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Pagination offset. Pass this value to subsequent requests to fetch the next page of resources."
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Comma separated list of revision `status` (CREATING, QUEUED, AWAITING_BUILD, BUILDING, AWAITING_DEPLOY, DEPLOYING, CREATE_FAILED, BUILD_FAILED, DEPLOY_FAILED, DEPLOYED, SKIPPED, INTERRUPTED, UNKNOWN) fields to filter by."
+              },
+              {
+                "name": "remote_reconciled",
+                "value": "",
+                "type": "query",
+                "description": "Flag to filter by remote reconciled revisions."
+              }
+            ]
+          },
+          "docs": "List all revisions for a deployment."
+        },
+        {
+          "info": {
+            "name": "Get Revision",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id/revisions/:revision_id",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "revision_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a revision by ID for a deployment."
+        },
+        {
+          "info": {
+            "name": "Redeploy Revision",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/deployments/:deployment_id/revisions/:revision_id/redeploy",
+            "params": [
+              {
+                "name": "deployment_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "revision_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Redeploy a specific revision ID."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

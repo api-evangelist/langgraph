@@ -1,0 +1,116 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Listeners (v2) API",
+    "version": "0.1.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Listeners (v2)",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List Listeners",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/listeners",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of resources to return."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Pagination offset. Pass this value to subsequent requests to fetch the next page of resources."
+              }
+            ]
+          },
+          "docs": "List all listeners."
+        },
+        {
+          "info": {
+            "name": "Create Listener",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v2/listeners",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a listener.<br>\n<br>\nCreating a listener is only allowed for LangSmith organizations with self-hosted enterprise plans."
+        },
+        {
+          "info": {
+            "name": "Get Listener",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v2/listeners/:listener_id",
+            "params": [
+              {
+                "name": "listener_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a listener by ID."
+        },
+        {
+          "info": {
+            "name": "Patch Listener",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/v2/listeners/:listener_id",
+            "params": [
+              {
+                "name": "listener_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Patch a listener by ID."
+        },
+        {
+          "info": {
+            "name": "Delete Listener",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v2/listeners/:listener_id",
+            "params": [
+              {
+                "name": "listener_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a listener by ID."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
