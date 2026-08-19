@@ -30,7 +30,7 @@ tags:
 created: '2026-01-02'
 modified: '2026-05-19'
 url: https://raw.githubusercontent.com/api-evangelist/langgraph/refs/heads/main/apis.yml
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 apis:
 - aid: langgraph:langgraph-agent-connections-v2-api
   name: LangGraph Agent Connections (v2) API
