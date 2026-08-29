@@ -5,6 +5,19 @@ description: >-
   primitives for greater control over agent behavior. LangGraph Platform (LangSmith Deployment) provides managed
   infrastructure for running agents in production with assistants, threads, and runs.
 kind: contract
+deliveryModel:
+  model: self-hosted
+  license: MIT
+  open_source: true
+  commercial: false
+  callable_host: true
+  label: Self-hosted open source · you run it yourself
+  confidence: high
+  source:
+  - license
+  - openapi
+  generated: '2026-08-28'
+  method: derived
 accessModel:
   pricing: freemium
   onboarding: self-serve
