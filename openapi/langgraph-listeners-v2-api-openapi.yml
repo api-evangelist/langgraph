@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Listeners (v2) API
+  title: LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Listeners (v2) Listeners (v2) API
   description: 'The LangSmith Deployment Control Plane API is used to programmatically create and manage
 
     Agent Server deployments. For example, the APIs can be orchestrated to
@@ -37,6 +37,9 @@ info:
 
     '
   version: 0.1.0
+servers:
+- url: https://api.host.langchain.com
+  description: Base URL declared by the provider in apis.yml (roadmap#122).
 tags:
 - name: Listeners (v2)
 paths:
@@ -265,6 +268,15 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     ListenerComputeConfig:
       properties:
         k8s_namespaces:
@@ -282,52 +294,21 @@ components:
         <br>
 
         All fields are nullable, but are validated based on `compute_type`.'
-    HTTPValidationError:
+    ListenerPatchRequest:
       properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+          description: The version of the listener.
+        compute_config:
+          anyOf:
+          - $ref: '#/components/schemas/ListenerComputeConfig'
+          - type: 'null'
       type: object
-      title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ListenersList:
-      properties:
-        resources:
-          items:
-            $ref: '#/components/schemas/Listener'
-          type: array
-          title: Resources
-        offset:
-          type: integer
-          title: Offset
-          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
-      type: object
-      required:
-      - resources
-      - offset
-      title: ListenersList
+      title: ListenerPatchRequest
+      description: Requst body for patching a listener.
     ListenerCreateRequest:
       properties:
         version:
@@ -358,21 +339,22 @@ components:
         <br>
 
         A listener must have a unique combination of `workspace_id` and `compute_id`.'
-    ListenerPatchRequest:
+    ListenersList:
       properties:
-        version:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Version
-          description: The version of the listener.
-        compute_config:
-          anyOf:
-          - $ref: '#/components/schemas/ListenerComputeConfig'
-          - type: 'null'
+        resources:
+          items:
+            $ref: '#/components/schemas/Listener'
+          type: array
+          title: Resources
+        offset:
+          type: integer
+          title: Offset
+          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
       type: object
-      title: ListenerPatchRequest
-      description: Requst body for patching a listener.
+      required:
+      - resources
+      - offset
+      title: ListenersList
     Listener:
       properties:
         version:
@@ -417,8 +399,29 @@ components:
       - updated_at
       title: Listener
       description: Listener resource.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
-    LangSmith API Key:
+    LangSmith_API_Key:
       type: apiKey
       in: header
       name: X-Api-Key

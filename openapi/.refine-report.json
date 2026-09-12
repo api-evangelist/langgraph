@@ -17,6 +17,13 @@
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
+  "notes": [
+    "langgraph-agent-connections-v2-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
+    "langgraph-auth-service-v2-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
+    "langgraph-deployments-v2-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
+    "langgraph-integrations-v1-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
+    "langgraph-listeners-v2-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
+    "apis.yml register: already-registered"
+  ],
   "skipped": []
 }
