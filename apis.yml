@@ -38,6 +38,12 @@ image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/langgraph.
 tags:
   - Agents
   - Artificial Intelligence
+  - LLM
+  - Workflows
+  - Orchestration
+tags_raw:
+  - Agents
+  - Artificial Intelligence
   - Large Language Models
   - Workflows
   - Orchestration
