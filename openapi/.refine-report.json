@@ -1,11 +1,7 @@
 {
   "provider": "langgraph",
   "sources": [
-    "langgraph-agent-connections-v2-api-openapi.yml",
-    "langgraph-auth-service-v2-api-openapi.yml",
-    "langgraph-deployments-v2-api-openapi.yml",
-    "langgraph-integrations-v1-api-openapi.yml",
-    "langgraph-listeners-v2-api-openapi.yml"
+    "_original/langgraph-openapi.json"
   ],
   "outputs": [
     "langgraph-agent-connections-v2-api-openapi.yml",
@@ -18,12 +14,20 @@
   "errors": [],
   "warnings": [],
   "notes": [
-    "langgraph-agent-connections-v2-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
-    "langgraph-auth-service-v2-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
-    "langgraph-deployments-v2-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
-    "langgraph-integrations-v1-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
-    "langgraph-listeners-v2-api-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "langgraph-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0; renamed 1 component key(s) illegal in 3.x (e.g. LangSmith API Key)",
+    "langgraph-openapi.json: declared missing tag: Agent Connections (v2)",
+    "langgraph-openapi.json: declared missing tag: Auth Service (v2)",
+    "langgraph-openapi.json: declared missing tag: Deployments (v2)",
+    "langgraph-openapi.json: declared missing tag: Integrations (v1)",
+    "langgraph-openapi.json: declared missing tag: Listeners (v2)",
     "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "langgraph-agent-connections-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "langgraph-auth-service-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "langgraph-deployments-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "langgraph-integrations-v1-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "langgraph-listeners-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
