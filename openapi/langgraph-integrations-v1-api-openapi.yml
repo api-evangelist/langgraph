@@ -126,6 +126,52 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    GithubRepository:
+      properties:
+        host_integration_id:
+          type: string
+          format: uuid
+          title: GitHub Integration ID
+          description: GitHub Integration ID.<br><br>For example, in the `POST /v2/deployments` request body, set `integration_id` to the value of this field.
+        id:
+          type: integer
+          title: ID
+          description: GitHub repository ID.
+        name:
+          type: string
+          title: Name
+          description: GitHub repository name.
+        owner:
+          type: string
+          title: Owner
+          description: GitHub repository owner.
+        url:
+          type: string
+          title: URL
+          description: GitHub repository URL.<br><br>For example, in the `POST /v2/deployments` request body, set `source_config.repo_url` to the value of this field.
+        default_branch:
+          type: string
+          title: Default Branch
+          description: GitHub repository default branch.<br><br>For example, in the `POST /v2/deployments` request body, set `source_revision_config.repo_ref` to the value of this field.
+      type: object
+      required:
+      - host_integration_id
+      - id
+      - name
+      - owner
+      - url
+      - default_branch
+      title: GithubRepository
+      description: Metadata for a GitHub repository.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     ValidationError:
       properties:
         loc:
@@ -169,52 +215,6 @@ components:
       - name
       title: GithubIntegration
       description: Metadata for a GitHub integration.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    GithubRepository:
-      properties:
-        host_integration_id:
-          type: string
-          format: uuid
-          title: GitHub Integration ID
-          description: GitHub Integration ID.<br><br>For example, in the `POST /v2/deployments` request body, set `integration_id` to the value of this field.
-        id:
-          type: integer
-          title: ID
-          description: GitHub repository ID.
-        name:
-          type: string
-          title: Name
-          description: GitHub repository name.
-        owner:
-          type: string
-          title: Owner
-          description: GitHub repository owner.
-        url:
-          type: string
-          title: URL
-          description: GitHub repository URL.<br><br>For example, in the `POST /v2/deployments` request body, set `source_config.repo_url` to the value of this field.
-        default_branch:
-          type: string
-          title: Default Branch
-          description: GitHub repository default branch.<br><br>For example, in the `POST /v2/deployments` request body, set `source_revision_config.repo_ref` to the value of this field.
-      type: object
-      required:
-      - host_integration_id
-      - id
-      - name
-      - owner
-      - url
-      - default_branch
-      title: GithubRepository
-      description: Metadata for a GitHub repository.
   securitySchemes:
     LangSmith_API_Key:
       type: apiKey

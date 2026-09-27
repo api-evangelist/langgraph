@@ -659,6 +659,34 @@ paths:
       - Bearer Auth: []
 components:
   schemas:
+    OAuthTokenStatusResponse:
+      properties:
+        has_token:
+          type: boolean
+          title: Has Token
+      type: object
+      required:
+      - has_token
+      title: OAuthTokenStatusResponse
+      description: Simple status indicating if a user has a token for a provider/agent.
+    MCPOAuthProviderCreateRequest:
+      properties:
+        provider_id:
+          type: string
+          title: Provider Id
+        name:
+          type: string
+          title: Name
+        mcp_server_url:
+          type: string
+          title: Mcp Server Url
+      type: object
+      required:
+      - provider_id
+      - name
+      - mcp_server_url
+      title: MCPOAuthProviderCreateRequest
+      description: Request model for creating OAuth provider via MCP auto-discovery.
     AuthAuthenticateRequest:
       properties:
         user_id:
@@ -709,6 +737,50 @@ components:
       - scopes
       title: AuthAuthenticateRequest
       description: Auth authenticate request.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    AuthWaitResponse:
+      properties:
+        status:
+          $ref: '#/components/schemas/AuthWaitStatus'
+        token:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token
+      type: object
+      required:
+      - status
+      title: AuthWaitResponse
+      description: Auth wait response.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     OAuthProviderUpdateRequest:
       properties:
         name:
@@ -749,6 +821,41 @@ components:
       type: object
       title: OAuthProviderUpdateRequest
       description: Request model for updating OAuth provider.
+    AuthAuthenticateResponse:
+      properties:
+        status:
+          $ref: '#/components/schemas/AuthStatus'
+        url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Url
+        auth_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Auth Id
+        token:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token
+        user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - status
+      title: AuthAuthenticateResponse
+      description: Auth authenticate response.
     OAuthProviderCreateRequest:
       properties:
         provider_id:
@@ -850,41 +957,15 @@ components:
       - updated_at
       title: OAuthTokenSummary
       description: Public-facing token summary — no sensitive data.
-    AuthAuthenticateResponse:
-      properties:
-        status:
-          $ref: '#/components/schemas/AuthStatus'
-        url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Url
-        auth_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Auth Id
-        token:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Token
-        user_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: User Id
-        metadata:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Metadata
-      type: object
-      required:
-      - status
-      title: AuthAuthenticateResponse
-      description: Auth authenticate response.
+    AuthWaitStatus:
+      type: string
+      enum:
+      - completed
+      - pending
+      - timeout
+      - not_found
+      title: AuthWaitStatus
+      description: Valid auth wait status values.
     OAuthProviderResponse:
       properties:
         id:
@@ -957,72 +1038,6 @@ components:
       - updated_at
       title: OAuthProviderResponse
       description: Response model for OAuth provider.
-    AuthStatus:
-      type: string
-      enum:
-      - completed
-      - pending
-      - connection_required
-      - token_expired
-      title: AuthStatus
-      description: Valid authentication status values.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    MCPOAuthProviderCreateRequest:
-      properties:
-        provider_id:
-          type: string
-          title: Provider Id
-        name:
-          type: string
-          title: Name
-        mcp_server_url:
-          type: string
-          title: Mcp Server Url
-      type: object
-      required:
-      - provider_id
-      - name
-      - mcp_server_url
-      title: MCPOAuthProviderCreateRequest
-      description: Request model for creating OAuth provider via MCP auto-discovery.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    AuthWaitStatus:
-      type: string
-      enum:
-      - completed
-      - pending
-      - timeout
-      - not_found
-      title: AuthWaitStatus
-      description: Valid auth wait status values.
     OAuthFinalizeRequest:
       properties:
         code:
@@ -1037,30 +1052,6 @@ components:
       - state
       title: OAuthFinalizeRequest
       description: Request model for frontend-bridged OAuth callback finalization.
-    AuthWaitResponse:
-      properties:
-        status:
-          $ref: '#/components/schemas/AuthWaitStatus'
-        token:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Token
-      type: object
-      required:
-      - status
-      title: AuthWaitResponse
-      description: Auth wait response.
-    OAuthTokenStatusResponse:
-      properties:
-        has_token:
-          type: boolean
-          title: Has Token
-      type: object
-      required:
-      - has_token
-      title: OAuthTokenStatusResponse
-      description: Simple status indicating if a user has a token for a provider/agent.
     OAuthTokenUpdateRequest:
       properties:
         provider_account_label:
@@ -1076,6 +1067,15 @@ components:
       type: object
       title: OAuthTokenUpdateRequest
       description: Request model for updating a token's metadata.
+    AuthStatus:
+      type: string
+      enum:
+      - completed
+      - pending
+      - connection_required
+      - token_expired
+      title: AuthStatus
+      description: Valid authentication status values.
   securitySchemes:
     LangSmith_API_Key:
       type: apiKey
