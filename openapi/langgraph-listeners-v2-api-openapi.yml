@@ -232,27 +232,37 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ValidationError:
+    ListenerPatchRequest:
       properties:
-        loc:
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+          description: The version of the listener.
+        compute_config:
+          anyOf:
+          - $ref: '#/components/schemas/ListenerComputeConfig'
+          - type: 'null'
+      type: object
+      title: ListenerPatchRequest
+      description: Requst body for patching a listener.
+    ListenersList:
+      properties:
+        resources:
           items:
-            anyOf:
-            - type: string
-            - type: integer
+            $ref: '#/components/schemas/Listener'
           type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
+          title: Resources
+        offset:
+          type: integer
+          title: Offset
+          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
       type: object
       required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      - resources
+      - offset
+      title: ListenersList
     ListenerCreateRequest:
       properties:
         version:
@@ -283,22 +293,6 @@ components:
         <br>
 
         A listener must have a unique combination of `workspace_id` and `compute_id`.'
-    ListenersList:
-      properties:
-        resources:
-          items:
-            $ref: '#/components/schemas/Listener'
-          type: array
-          title: Resources
-        offset:
-          type: integer
-          title: Offset
-          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
-      type: object
-      required:
-      - resources
-      - offset
-      title: ListenersList
     ListenerComputeConfig:
       properties:
         k8s_namespaces:
@@ -316,21 +310,15 @@ components:
         <br>
 
         All fields are nullable, but are validated based on `compute_type`.'
-    ListenerPatchRequest:
+    HTTPValidationError:
       properties:
-        version:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Version
-          description: The version of the listener.
-        compute_config:
-          anyOf:
-          - $ref: '#/components/schemas/ListenerComputeConfig'
-          - type: 'null'
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
       type: object
-      title: ListenerPatchRequest
-      description: Requst body for patching a listener.
+      title: HTTPValidationError
     Listener:
       properties:
         version:
@@ -375,15 +363,27 @@ components:
       - updated_at
       title: Listener
       description: Listener resource.
-    HTTPValidationError:
+    ValidationError:
       properties:
-        detail:
+        loc:
           items:
-            $ref: '#/components/schemas/ValidationError'
+            anyOf:
+            - type: string
+            - type: integer
           type: array
-          title: Detail
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
       type: object
-      title: HTTPValidationError
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     LangSmith_API_Key:
       type: apiKey

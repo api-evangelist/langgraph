@@ -669,158 +669,6 @@ components:
       - has_token
       title: OAuthTokenStatusResponse
       description: Simple status indicating if a user has a token for a provider/agent.
-    MCPOAuthProviderCreateRequest:
-      properties:
-        provider_id:
-          type: string
-          title: Provider Id
-        name:
-          type: string
-          title: Name
-        mcp_server_url:
-          type: string
-          title: Mcp Server Url
-      type: object
-      required:
-      - provider_id
-      - name
-      - mcp_server_url
-      title: MCPOAuthProviderCreateRequest
-      description: Request model for creating OAuth provider via MCP auto-discovery.
-    AuthAuthenticateRequest:
-      properties:
-        user_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: User Id
-        ls_user_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Ls User Id
-        agent_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Agent Id
-        provider:
-          type: string
-          title: Provider
-        scopes:
-          items:
-            type: string
-          type: array
-          title: Scopes
-        use_agent_builder_public_oauth:
-          type: boolean
-          title: Use Agent Builder Public Oauth
-          default: false
-          include_in_schema: false
-        force_new:
-          type: boolean
-          title: Force New
-          default: false
-        token_id:
-          anyOf:
-          - type: string
-            format: uuid
-          - type: 'null'
-          title: Token Id
-        is_default:
-          type: boolean
-          title: Is Default
-          default: true
-      type: object
-      required:
-      - provider
-      - scopes
-      title: AuthAuthenticateRequest
-      description: Auth authenticate request.
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    AuthWaitResponse:
-      properties:
-        status:
-          $ref: '#/components/schemas/AuthWaitStatus'
-        token:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Token
-      type: object
-      required:
-      - status
-      title: AuthWaitResponse
-      description: Auth wait response.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    OAuthProviderUpdateRequest:
-      properties:
-        name:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Name
-        client_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Client Id
-        client_secret:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Client Secret
-        auth_url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Auth Url
-        token_url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Token Url
-        uses_pkce:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Uses Pkce
-        code_challenge_method:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Code Challenge Method
-      type: object
-      title: OAuthProviderUpdateRequest
-      description: Request model for updating OAuth provider.
     AuthAuthenticateResponse:
       properties:
         status:
@@ -856,7 +704,21 @@ components:
       - status
       title: AuthAuthenticateResponse
       description: Auth authenticate response.
-    OAuthProviderCreateRequest:
+    OAuthFinalizeRequest:
+      properties:
+        code:
+          type: string
+          title: Code
+        state:
+          type: string
+          title: State
+      type: object
+      required:
+      - code
+      - state
+      title: OAuthFinalizeRequest
+      description: Request model for frontend-bridged OAuth callback finalization.
+    MCPOAuthProviderCreateRequest:
       properties:
         provider_id:
           type: string
@@ -864,108 +726,16 @@ components:
         name:
           type: string
           title: Name
-        client_id:
+        mcp_server_url:
           type: string
-          title: Client Id
-        client_secret:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Client Secret
-        auth_url:
-          type: string
-          title: Auth Url
-        token_url:
-          type: string
-          title: Token Url
-        uses_pkce:
-          type: boolean
-          title: Uses Pkce
-          default: false
-        code_challenge_method:
-          type: string
-          title: Code Challenge Method
-          default: S256
-        provider_type:
-          anyOf:
-          - type: string
-            enum:
-            - microsoft
-            - salesforce
-            - slack
-          - type: 'null'
-          title: Provider Type
-        token_endpoint_auth_method:
-          type: string
-          enum:
-          - none
-          - client_secret_basic
-          - client_secret_post
-          title: Token Endpoint Auth Method
-          default: client_secret_post
+          title: Mcp Server Url
       type: object
       required:
       - provider_id
       - name
-      - client_id
-      - auth_url
-      - token_url
-      title: OAuthProviderCreateRequest
-      description: Request model for creating OAuth provider manually.
-    OAuthTokenSummary:
-      properties:
-        id:
-          type: string
-          title: Id
-        provider_id:
-          type: string
-          title: Provider Id
-        provider_account_label:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Provider Account Label
-        scopes:
-          items:
-            type: string
-          type: array
-          title: Scopes
-          default: []
-        expires_at:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Expires At
-        is_default:
-          type: boolean
-          title: Is Default
-          default: false
-        created_at:
-          type: string
-          format: date-time
-          title: Created At
-        updated_at:
-          type: string
-          format: date-time
-          title: Updated At
-      type: object
-      required:
-      - id
-      - provider_id
-      - created_at
-      - updated_at
-      title: OAuthTokenSummary
-      description: Public-facing token summary — no sensitive data.
-    AuthWaitStatus:
-      type: string
-      enum:
-      - completed
-      - pending
-      - timeout
-      - not_found
-      title: AuthWaitStatus
-      description: Valid auth wait status values.
+      - mcp_server_url
+      title: MCPOAuthProviderCreateRequest
+      description: Request model for creating OAuth provider via MCP auto-discovery.
     OAuthProviderResponse:
       properties:
         id:
@@ -1038,20 +808,182 @@ components:
       - updated_at
       title: OAuthProviderResponse
       description: Response model for OAuth provider.
-    OAuthFinalizeRequest:
+    AuthWaitStatus:
+      type: string
+      enum:
+      - completed
+      - pending
+      - timeout
+      - not_found
+      title: AuthWaitStatus
+      description: Valid auth wait status values.
+    HTTPValidationError:
       properties:
-        code:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    OAuthTokenSummary:
+      properties:
+        id:
           type: string
-          title: Code
-        state:
+          title: Id
+        provider_id:
           type: string
-          title: State
+          title: Provider Id
+        provider_account_label:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Provider Account Label
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+          default: []
+        expires_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expires At
+        is_default:
+          type: boolean
+          title: Is Default
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
       type: object
       required:
-      - code
-      - state
-      title: OAuthFinalizeRequest
-      description: Request model for frontend-bridged OAuth callback finalization.
+      - id
+      - provider_id
+      - created_at
+      - updated_at
+      title: OAuthTokenSummary
+      description: Public-facing token summary — no sensitive data.
+    OAuthProviderUpdateRequest:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        client_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Id
+        client_secret:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Secret
+        auth_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Auth Url
+        token_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token Url
+        uses_pkce:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Uses Pkce
+        code_challenge_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Code Challenge Method
+      type: object
+      title: OAuthProviderUpdateRequest
+      description: Request model for updating OAuth provider.
+    AuthWaitResponse:
+      properties:
+        status:
+          $ref: '#/components/schemas/AuthWaitStatus'
+        token:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token
+      type: object
+      required:
+      - status
+      title: AuthWaitResponse
+      description: Auth wait response.
+    AuthAuthenticateRequest:
+      properties:
+        user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Id
+        ls_user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ls User Id
+        agent_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Id
+        provider:
+          type: string
+          title: Provider
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+        use_agent_builder_public_oauth:
+          type: boolean
+          title: Use Agent Builder Public Oauth
+          default: false
+          include_in_schema: false
+        force_new:
+          type: boolean
+          title: Force New
+          default: false
+        token_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Token Id
+        is_default:
+          type: boolean
+          title: Is Default
+          default: true
+      type: object
+      required:
+      - provider
+      - scopes
+      title: AuthAuthenticateRequest
+      description: Auth authenticate request.
+    AuthStatus:
+      type: string
+      enum:
+      - completed
+      - pending
+      - connection_required
+      - token_expired
+      title: AuthStatus
+      description: Valid authentication status values.
     OAuthTokenUpdateRequest:
       properties:
         provider_account_label:
@@ -1067,15 +999,83 @@ components:
       type: object
       title: OAuthTokenUpdateRequest
       description: Request model for updating a token's metadata.
-    AuthStatus:
-      type: string
-      enum:
-      - completed
-      - pending
-      - connection_required
-      - token_expired
-      title: AuthStatus
-      description: Valid authentication status values.
+    OAuthProviderCreateRequest:
+      properties:
+        provider_id:
+          type: string
+          title: Provider Id
+        name:
+          type: string
+          title: Name
+        client_id:
+          type: string
+          title: Client Id
+        client_secret:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Secret
+        auth_url:
+          type: string
+          title: Auth Url
+        token_url:
+          type: string
+          title: Token Url
+        uses_pkce:
+          type: boolean
+          title: Uses Pkce
+          default: false
+        code_challenge_method:
+          type: string
+          title: Code Challenge Method
+          default: S256
+        provider_type:
+          anyOf:
+          - type: string
+            enum:
+            - microsoft
+            - salesforce
+            - slack
+          - type: 'null'
+          title: Provider Type
+        token_endpoint_auth_method:
+          type: string
+          enum:
+          - none
+          - client_secret_basic
+          - client_secret_post
+          title: Token Endpoint Auth Method
+          default: client_secret_post
+      type: object
+      required:
+      - provider_id
+      - name
+      - client_id
+      - auth_url
+      - token_url
+      title: OAuthProviderCreateRequest
+      description: Request model for creating OAuth provider manually.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     LangSmith_API_Key:
       type: apiKey
