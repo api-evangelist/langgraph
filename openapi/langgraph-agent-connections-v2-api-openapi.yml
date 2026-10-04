@@ -115,26 +115,27 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    AgentConnectionListResponse:
+    ValidationError:
       properties:
-        data:
+        loc:
           items:
-            $ref: '#/components/schemas/AgentConnectionResponse'
+            anyOf:
+            - type: string
+            - type: integer
           type: array
-          title: Data
-      type: object
-      required:
-      - data
-      title: AgentConnectionListResponse
-    CreateAgentConnectionRequest:
-      properties:
-        oauth_token_id:
+          title: Location
+        msg:
           type: string
-          title: Oauth Token Id
+          title: Message
+        type:
+          type: string
+          title: Error Type
       type: object
       required:
-      - oauth_token_id
-      title: CreateAgentConnectionRequest
+      - loc
+      - msg
+      - type
+      title: ValidationError
     AgentConnectionResponse:
       properties:
         id:
@@ -184,6 +185,26 @@ components:
       - created_by
       - created_at
       title: AgentConnectionResponse
+    CreateAgentConnectionRequest:
+      properties:
+        oauth_token_id:
+          type: string
+          title: Oauth Token Id
+      type: object
+      required:
+      - oauth_token_id
+      title: CreateAgentConnectionRequest
+    AgentConnectionListResponse:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/AgentConnectionResponse'
+          type: array
+          title: Data
+      type: object
+      required:
+      - data
+      title: AgentConnectionListResponse
     HTTPValidationError:
       properties:
         detail:
@@ -193,27 +214,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
   securitySchemes:
     LangSmith_API_Key:
       type: apiKey
