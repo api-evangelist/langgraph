@@ -35,6 +35,9 @@ accessModel:
 position: Consuming
 access: 3rd-Party
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/langgraph.png
+x-docs-platform: mintlify
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-10-03
 tags:
   - Agents
   - Artificial Intelligence
@@ -134,6 +137,9 @@ apis:
   - type: Authentication
     url: https://docs.langchain.com/langsmith/create-account-api-key
 common:
+  - type: CapabilityMap
+    url: capabilities/langgraph-capability-edges.yml
+    name: LangGraph Business Capability Map
   - type: IssueTracker
     url: https://github.com/langchain-ai/langgraph/issues
   - type: Releases
