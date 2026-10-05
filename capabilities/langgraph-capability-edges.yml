@@ -1,0 +1,26 @@
+slug: langgraph
+provider: LangGraph
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Software & Technology
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 1
+edges:
+- tag: Deployments (v2)
+  spec_file: langgraph-deployments-v2-api-openapi.yml
+  capability_id: BC-4210.40
+  capability_id_l1: BC-4210
+  capability_name: Deployment Orchestration
+  confidence: 0.72
+  evidence: POST /v2/deployments create_deployment; POST /v2/deployments/{deployment_id}/revisions/{revision_id}/redeploy
+    redeploy_revision; schemas DeploymentCreateRequest, SourceRevisionConfig, Container
+  reason: Control-plane API that creates, patches, versions by revision and redeploys agent server deployments
+    to managed infrastructure — software deployment orchestration. Some ambiguity between Deployment Orchestration
+    and Release Engineering/Environment Management, so 0.72.
