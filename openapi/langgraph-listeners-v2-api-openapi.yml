@@ -232,58 +232,23 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ListenersList:
+    ListenerComputeConfig:
       properties:
-        resources:
-          items:
-            $ref: '#/components/schemas/Listener'
-          type: array
-          title: Resources
-        offset:
-          type: integer
-          title: Offset
-          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
-      type: object
-      required:
-      - resources
-      - offset
-      title: ListenersList
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    ListenerPatchRequest:
-      properties:
-        version:
+        k8s_namespaces:
           anyOf:
-          - type: string
+          - items:
+              type: string
+            type: array
           - type: 'null'
-          title: Version
-          description: The version of the listener.
-        compute_config:
-          anyOf:
-          - $ref: '#/components/schemas/ListenerComputeConfig'
-          - type: 'null'
+          title: Kubernetes Namespaces
+          description: A list of Kubernetes namespaces to which the listener is configured for.<br><br>Only applicable for `k8s` compute type.
       type: object
-      title: ListenerPatchRequest
-      description: Requst body for patching a listener.
+      title: ListenerComputeConfig
+      description: 'Fields for a listener that are specific to `compute_type`.<br>
+
+        <br>
+
+        All fields are nullable, but are validated based on `compute_type`.'
     Listener:
       properties:
         version:
@@ -328,6 +293,43 @@ components:
       - updated_at
       title: Listener
       description: Listener resource.
+    ListenersList:
+      properties:
+        resources:
+          items:
+            $ref: '#/components/schemas/Listener'
+          type: array
+          title: Resources
+        offset:
+          type: integer
+          title: Offset
+          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
+      type: object
+      required:
+      - resources
+      - offset
+      title: ListenersList
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
     ListenerCreateRequest:
       properties:
         version:
@@ -358,6 +360,21 @@ components:
         <br>
 
         A listener must have a unique combination of `workspace_id` and `compute_id`.'
+    ListenerPatchRequest:
+      properties:
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+          description: The version of the listener.
+        compute_config:
+          anyOf:
+          - $ref: '#/components/schemas/ListenerComputeConfig'
+          - type: 'null'
+      type: object
+      title: ListenerPatchRequest
+      description: Requst body for patching a listener.
     HTTPValidationError:
       properties:
         detail:
@@ -367,23 +384,6 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
-    ListenerComputeConfig:
-      properties:
-        k8s_namespaces:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Kubernetes Namespaces
-          description: A list of Kubernetes namespaces to which the listener is configured for.<br><br>Only applicable for `k8s` compute type.
-      type: object
-      title: ListenerComputeConfig
-      description: 'Fields for a listener that are specific to `compute_type`.<br>
-
-        <br>
-
-        All fields are nullable, but are validated based on `compute_type`.'
   securitySchemes:
     LangSmith_API_Key:
       type: apiKey
