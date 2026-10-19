@@ -1,0 +1,700 @@
+openapi: 3.2.0
+info:
+  title: LangSmith Deployment Control Plane Integrations (v2) API
+  description: 'The LangSmith Deployment Control Plane API is used to programmatically create and manage
+
+    Agent Server deployments. For example, the APIs can be orchestrated to
+
+    create custom CI/CD workflows.
+
+
+    ## Host
+
+    https://api.host.langchain.com
+
+
+    ## Authentication
+
+    To authenticate with the LangSmith Deployment Control Plane API, set the `X-Api-Key` header
+
+    to a valid LangSmith API key.
+
+
+    ## Versioning
+
+    Each endpoint path is prefixed with a version (e.g. `v1`, `v2`).
+
+
+    ## Quick Start
+
+    1. Call `POST /v2/deployments` to create a new Deployment. The response body contains the Deployment ID (`id`) and the ID of the latest (and first) revision (`latest_revision_id`).
+
+    1. Call `GET /v2/deployments/{deployment_id}` to retrieve the Deployment. Set `deployment_id` in the URL to the value of Deployment ID (`id`).
+
+    1. Poll for revision `status` until `status` is `DEPLOYED` by calling `GET /v2/deployments/{deployment_id}/revisions/{latest_revision_id}`.
+
+    1. Call `PATCH /v2/deployments/{deployment_id}` to update the deployment.'
+  version: 0.1.0
+tags:
+- name: Integrations (v2)
+paths:
+  /v2/integrations/github/installations:
+    get:
+      tags:
+      - Integrations (v2)
+      summary: List Github Installations
+      description: List GitHub App installations available to the workspace.
+      operationId: list_github_installations_v2_integrations_github_installations_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Maximum number of resources to return.
+          default: 20
+          title: Page Size
+        description: Maximum number of resources to return.
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Opaque cursor returned by the previous page.
+          title: Cursor
+        description: Opaque cursor returned by the previous page.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GithubInstallationsList'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/integrations/github/installations/{integration_id}/repositories:
+    get:
+      tags:
+      - Integrations (v2)
+      summary: List Github Installation Repositories
+      description: List repositories available through a GitHub App installation.
+      operationId: list_github_installation_repositories_v2_integrations_github_installations__integration_id__repositories_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Integration ID
+          description: GitHub integration ID.
+        description: GitHub integration ID.
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Maximum number of resources to return.
+          default: 20
+          title: Page Size
+        description: Maximum number of resources to return.
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Opaque cursor returned by the previous page.
+          title: Cursor
+        description: Opaque cursor returned by the previous page.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GithubRepositoriesList'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/integrations/github/installation-link:
+    post:
+      tags:
+      - Integrations (v2)
+      summary: Get Github Install Link Endpoint
+      description: Create a GitHub App installation link.
+      operationId: get_github_install_link_endpoint_v2_integrations_github_installation_link_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GithubInstallLink'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+  /v2/integrations/forge-github/installations:
+    get:
+      tags:
+      - Integrations (v2)
+      summary: List Forge Github Installations
+      description: List Forge GitHub App installations available to the workspace.
+      operationId: list_forge_github_installations_v2_integrations_forge_github_installations_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Maximum number of resources to return.
+          default: 20
+          title: Page Size
+        description: Maximum number of resources to return.
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Opaque cursor returned by the previous page.
+          title: Cursor
+        description: Opaque cursor returned by the previous page.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForgeGithubInstallationsList'
+        '501':
+          description: The Engine GitHub App isn't configured on this install. The problem detail names the settings an operator must set.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/integrations/forge-github/installations/{integration_id}/repositories:
+    get:
+      tags:
+      - Integrations (v2)
+      summary: List Forge Github Installation Repositories
+      description: List repositories available through a Forge GitHub App installation.
+      operationId: list_forge_github_installation_repositories_v2_integrations_forge_github_installations__integration_id__repositories_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Integration ID
+          description: Forge GitHub integration ID.
+        description: Forge GitHub integration ID.
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Maximum number of resources to return.
+          default: 20
+          title: Page Size
+        description: Maximum number of resources to return.
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Opaque cursor returned by the previous page.
+          title: Cursor
+        description: Opaque cursor returned by the previous page.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GithubRepositoriesList'
+        '501':
+          description: The Engine GitHub App isn't configured on this install. The problem detail names the settings an operator must set.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/integrations/forge-github/installation-link:
+    post:
+      tags:
+      - Integrations (v2)
+      summary: Get Forge Github Install Link Endpoint
+      description: Create a Forge GitHub App installation link.
+      operationId: get_forge_github_install_link_endpoint_v2_integrations_forge_github_installation_link_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+              - $ref: '#/components/schemas/GithubInstallLinkRequest'
+              - type: 'null'
+              title: Body
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngineInstallLink'
+        '501':
+          description: The Engine GitHub App isn't configured on this install. The problem detail names the settings an operator must set.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+  /v2/integrations/forge-github/picker-sessions/{session_id}:
+    get:
+      tags:
+      - Integrations (v2)
+      summary: Get Engine Picker Session Endpoint
+      description: Get a Forge GitHub App installation picker session.
+      operationId: get_engine_picker_session_endpoint_v2_integrations_forge_github_picker_sessions__session_id__get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Picker session ID
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnginePickerSessionResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/integrations/forge-github/picker-sessions/{session_id}/selection:
+    post:
+      tags:
+      - Integrations (v2)
+      summary: Create Engine Picker Session Selection
+      description: Select an installation or begin a new GitHub App installation.
+      operationId: create_engine_picker_session_selection_v2_integrations_forge_github_picker_sessions__session_id__selection_post
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Picker session ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgeGithubPickerSelectionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnginePickerSelectResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    GithubInstallLink:
+      properties:
+        install_url:
+          type: string
+          title: Install Url
+        oauth_reuse_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Oauth Reuse Url
+      type: object
+      required:
+      - install_url
+      title: GithubInstallLink
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    EnginePickerInstallOption:
+      properties:
+        installation_id:
+          type: integer
+          title: Installation Id
+        account_login:
+          type: string
+          title: Account Login
+        account_type:
+          type: string
+          title: Account Type
+        already_in_org:
+          type: boolean
+          title: Already In Org
+          default: false
+      type: object
+      required:
+      - installation_id
+      - account_login
+      - account_type
+      title: EnginePickerInstallOption
+      description: 'One row of the post-OAuth picker. Each one is an Engine install the
+
+        user has GitHub-side access to via the OAuth token captured at the
+
+        callback.'
+    ForgeGithubIntegration:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: ID
+          description: GitHub Integration ID.<br><br>For example, in the `POST /v2/deployments` request body, set `integration_id` to the value of this field.
+        installation_id:
+          type: integer
+          title: Installation ID
+          description: GitHub installation ID.
+        name:
+          type: string
+          title: Name
+          description: GitHub accout name.
+        repository_selection:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Repository Selection
+          description: Whether the GitHub App install grants access to 'all' repos or only 'selected' ones. When 'selected', newly created repos are not auto-included and must be added on GitHub.
+        settings_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Settings URL
+          description: Deep link to the install's GitHub settings page, where repo access can be edited. GitHub's installation `html_url`.
+      type: object
+      required:
+      - id
+      - installation_id
+      - name
+      title: ForgeGithubIntegration
+      description: 'Engine ("forge") install metadata. Extends the shared shape with two
+
+        fields the Engine repo picker needs to recover from a "selected
+
+        repositories" install that doesn''t grant the repo the user wants:
+
+        `repository_selection` and `settings_url` (GitHub''s per-install settings
+
+        page, where repo access is edited). Kept off the base `GithubIntegration`
+
+        so the public Deployments API contract is unchanged.'
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    EngineInstallLink:
+      properties:
+        install_url:
+          type: string
+          title: Install Url
+      type: object
+      required:
+      - install_url
+      title: EngineInstallLink
+      description: 'Engine GitHub App connect-link response. Returned by
+
+        `/forge/github/install`. `install_url` is now the *OAuth authorize* URL —
+
+        the user lands on GitHub OAuth first, the callback enumerates what they
+
+        can actually see, and either auto-routes to a fresh install or shows a
+
+        server-rendered picker. Field name kept for backwards compatibility with
+
+        the FE, but the contents changed.'
+    GithubInstallationsList:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/GithubIntegration'
+          type: array
+          title: Items
+          description: GitHub App installations available to the workspace.
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+          description: Opaque cursor for the next page, if one exists.
+      type: object
+      required:
+      - items
+      title: GithubInstallationsList
+      description: A page of GitHub App installations.
+    EnginePickerSessionResponse:
+      properties:
+        installs:
+          items:
+            $ref: '#/components/schemas/EnginePickerInstallOption'
+          type: array
+          title: Installs
+        return_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Return To
+      type: object
+      required:
+      - installs
+      title: EnginePickerSessionResponse
+      description: 'Payload for GET /forge/github/picker-session/{id}. The FE renders
+
+        `installs` plus a hardcoded "Install on a new GitHub org" affordance.
+
+        `return_to` round-trips back through the select endpoint so the final
+
+        result page lands the user back on their originating view.'
+    GithubRepository:
+      properties:
+        host_integration_id:
+          type: string
+          format: uuid
+          title: GitHub Integration ID
+          description: GitHub Integration ID.<br><br>For example, in the `POST /v2/deployments` request body, set `integration_id` to the value of this field.
+        id:
+          type: integer
+          title: ID
+          description: GitHub repository ID.
+        name:
+          type: string
+          title: Name
+          description: GitHub repository name.
+        owner:
+          type: string
+          title: Owner
+          description: GitHub repository owner.
+        url:
+          type: string
+          title: URL
+          description: GitHub repository URL.<br><br>For example, in the `POST /v2/deployments` request body, set `source_config.repo_url` to the value of this field.
+        default_branch:
+          type: string
+          title: Default Branch
+          description: GitHub repository default branch.<br><br>For example, in the `POST /v2/deployments` request body, set `source_revision_config.repo_ref` to the value of this field.
+      type: object
+      required:
+      - host_integration_id
+      - id
+      - name
+      - owner
+      - url
+      - default_branch
+      title: GithubRepository
+      description: Metadata for a GitHub repository.
+    ForgeGithubPickerSelectionRequest:
+      properties:
+        action:
+          type: string
+          enum:
+          - ATTACH
+          - INSTALL_NEW
+          title: Action
+          description: Whether to attach an installation or install the GitHub App.
+        installation_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Installation Id
+          description: GitHub installation ID required when action is ATTACH.
+      type: object
+      required:
+      - action
+      title: ForgeGithubPickerSelectionRequest
+      description: Selection from a Forge GitHub App installation picker.
+    GithubInstallLinkRequest:
+      properties:
+        return_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Return To
+          description: URL to return to after completing the GitHub App installation.
+      type: object
+      title: GithubInstallLinkRequest
+      description: Request to create a GitHub App installation link.
+    EnginePickerSelectResponse:
+      properties:
+        redirect_url:
+          type: string
+          title: Redirect Url
+      type: object
+      required:
+      - redirect_url
+      title: EnginePickerSelectResponse
+      description: 'Response for POST /forge/github/picker-session/{id}/select. The FE
+
+        navigates the browser to `redirect_url` — that URL is either the FE
+
+        result page (for "attach") or a github.com install picker (for
+
+        "install_new"). Returning JSON instead of 302 keeps the FE''s POST-as-API
+
+        flow predictable and lets it surface errors before navigating.'
+    ForgeGithubInstallationsList:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ForgeGithubIntegration'
+          type: array
+          title: Items
+          description: Forge GitHub App installations available to the workspace.
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+          description: Opaque cursor for the next page, if one exists.
+      type: object
+      required:
+      - items
+      title: ForgeGithubInstallationsList
+      description: A page of Forge GitHub App installations.
+    GithubRepositoriesList:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/GithubRepository'
+          type: array
+          title: Items
+          description: GitHub repositories available through the installation.
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+          description: Opaque cursor for the next page, if one exists.
+      type: object
+      required:
+      - items
+      title: GithubRepositoriesList
+      description: A page of GitHub repositories.
+    GithubIntegration:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: ID
+          description: GitHub Integration ID.<br><br>For example, in the `POST /v2/deployments` request body, set `integration_id` to the value of this field.
+        installation_id:
+          type: integer
+          title: Installation ID
+          description: GitHub installation ID.
+        name:
+          type: string
+          title: Name
+          description: GitHub accout name.
+      type: object
+      required:
+      - id
+      - installation_id
+      - name
+      title: GithubIntegration
+      description: Metadata for a GitHub integration.
+  securitySchemes:
+    LangSmith_API_Key:
+      type: apiKey
+      in: header
+      name: X-Api-Key

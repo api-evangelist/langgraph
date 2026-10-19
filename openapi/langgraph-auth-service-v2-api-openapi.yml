@@ -3,7 +3,37 @@ info:
   title: LangSmith Deployment Control Plane Auth Service (v2) API
   description: 'The LangSmith Deployment Control Plane API is used to programmatically create and manage
 
-    Agent Server deployments.'
+    Agent Server deployments. For example, the APIs can be orchestrated to
+
+    create custom CI/CD workflows.
+
+
+    ## Host
+
+    https://api.host.langchain.com
+
+
+    ## Authentication
+
+    To authenticate with the LangSmith Deployment Control Plane API, set the `X-Api-Key` header
+
+    to a valid LangSmith API key.
+
+
+    ## Versioning
+
+    Each endpoint path is prefixed with a version (e.g. `v1`, `v2`).
+
+
+    ## Quick Start
+
+    1. Call `POST /v2/deployments` to create a new Deployment. The response body contains the Deployment ID (`id`) and the ID of the latest (and first) revision (`latest_revision_id`).
+
+    1. Call `GET /v2/deployments/{deployment_id}` to retrieve the Deployment. Set `deployment_id` in the URL to the value of Deployment ID (`id`).
+
+    1. Poll for revision `status` until `status` is `DEPLOYED` by calling `GET /v2/deployments/{deployment_id}/revisions/{latest_revision_id}`.
+
+    1. Call `PATCH /v2/deployments/{deployment_id}` to update the deployment.'
   version: 0.1.0
 tags:
 - name: Auth Service (v2)
@@ -39,7 +69,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OAuthProviderCreateRequest'
+              oneOf:
+              - $ref: '#/components/schemas/AuthorizationCodeProviderCreateRequest'
+              - $ref: '#/components/schemas/ClientCredentialsProviderCreateRequest'
+              title: Request Data
         required: true
       responses:
         '200':
@@ -58,6 +91,60 @@ paths:
       - API Key: []
       - Tenant ID: []
       - Bearer Auth: []
+  /v2/auth/platform-providers:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: List Platform Oauth Providers
+      description: List platform-level OAuth providers available to all workspaces.
+      operationId: list_platform_oauth_providers_v2_auth_platform_providers_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/OAuthProviderResponse'
+                type: array
+                title: Response List Platform Oauth Providers V2 Auth Platform Providers Get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+  /v2/auth/platform-providers/{provider_id}:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: Get Platform Oauth Provider
+      description: Get a platform-level OAuth provider available to all workspaces.
+      operationId: get_platform_oauth_provider_v2_auth_platform_providers__provider_id__get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: OAuth provider ID
+          title: Provider Id
+        description: OAuth provider ID
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProviderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /v2/auth/setup/{provider_id}:
     get:
       tags:
@@ -155,9 +242,13 @@ paths:
       description: 'Handle OAuth callback redirect from OAuth providers.
 
 
-        Processes the OAuth token exchange, then redirects to the frontend callback
+        Always delegates to the frontend host-oauth-callback when LANGSMITH_URL is
 
-        page for a consistent UI experience.'
+        set — including agent-subject sessions — so finalize goes through the
+
+        authenticated POST callback (org-scoped). Unauthenticated GET never mints
+
+        or binds tokens for agent subjects.'
       operationId: oauth_callback_get_v2_auth_callback__provider_id__get
       security:
       - Bearer Auth: []
@@ -216,6 +307,25 @@ paths:
       tags:
       - Auth Service (v2)
       summary: Oauth Callback
+      description: 'Finalize an OAuth flow.
+
+
+        Claims the auth request, verifies the caller, exchanges the code, and saves the token.
+
+        Used by both the frontend bridge and the headless flow (where a customer-owned service
+
+        forwards the code/state, optionally proxied through smith-go).
+
+
+        User-subject sessions require the authenticated caller to match the initiator.
+
+        Agent-subject sessions (MDA Connect) skip that match — start is gated by
+
+        ``deployments:create`` / service key, and the FE bridge may present a different
+
+        same-org workspace session to complete consent — then bind via
+
+        ``host_oauth_agent_connections``.'
       operationId: oauth_callback_v2_auth_callback__provider_id__post
       security:
       - API Key: []
@@ -515,6 +625,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/token-events:
+    get:
+      tags:
+      - Auth Service (v2)
+      summary: List Token Events For User
+      description: 'List the calling user''s OAuth connection audit events, newest first.
+
+
+        Backs the frontend "your connection dropped, reconnect" surface. Scoped to
+
+        the authenticated user + org; both come from the auth context, never from
+
+        request input.'
+      operationId: list_token_events_for_user_v2_auth_token_events_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: provider_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter to one OAuth provider
+          title: Provider Id
+        description: Filter to one OAuth provider
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          description: Max events to return
+          default: 50
+          title: Limit
+        description: Max events to return
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TokenEventSummary'
+                title: Response List Token Events For User V2 Auth Token Events Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /v2/auth/tokens/{token_id}/metadata:
     patch:
       tags:
@@ -552,6 +718,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/tokens/import:
+    post:
+      tags:
+      - Auth Service (v2)
+      summary: Import Oauth Token
+      description: 'Persist a directly-obtained OAuth token (no authorization-code exchange).
+
+
+        The Slack managed-install flow receives a bot token inline from
+
+        ``apps.managedInstall`` instead of through the browser OAuth redirect. This
+
+        stores it (Fernet-encrypted at rest, via ``create_oauth_token``) for the
+
+        caller''s org/user against an existing provider. Requiring the provider to
+
+        already exist in the caller''s org scopes the write and blocks cross-org
+
+        token creation. The token value is never logged or returned.'
+      operationId: import_oauth_token_v2_auth_tokens_import_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthTokenImportRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTokenImportResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
   /v2/auth/tokens/{token_id}:
     delete:
       tags:
@@ -615,6 +824,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /v2/auth/tokens/exists/batch:
+    post:
+      tags:
+      - Auth Service (v2)
+      summary: Check Oauth Tokens Exist Batch
+      description: 'Batch token-presence check: per requested provider, whether the current user has any token.'
+      operationId: check_oauth_tokens_exist_batch_v2_auth_tokens_exists_batch_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthTokenStatusBatchRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTokenStatusBatchResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
   /v2/auth/tokens/workspace/slack/exists:
     get:
       tags:
@@ -659,6 +898,28 @@ paths:
       - Bearer Auth: []
 components:
   schemas:
+    OAuthTokenStatusBatchResponse:
+      properties:
+        has_token:
+          additionalProperties:
+            type: boolean
+          type: object
+          title: Has Token
+      type: object
+      required:
+      - has_token
+      title: OAuthTokenStatusBatchResponse
+      description: Per-provider token presence for the current user (provider_id -> has_token).
+    OAuthTokenStatusResponse:
+      properties:
+        has_token:
+          type: boolean
+          title: Has Token
+      type: object
+      required:
+      - has_token
+      title: OAuthTokenStatusResponse
+      description: Simple status indicating if a user has a token for a provider/agent.
     AuthStatus:
       type: string
       enum:
@@ -668,7 +929,96 @@ components:
       - token_expired
       title: AuthStatus
       description: Valid authentication status values.
-    OAuthProviderCreateRequest:
+    OAuthFinalizeRequest:
+      properties:
+        code:
+          type: string
+          title: Code
+        state:
+          type: string
+          title: State
+      type: object
+      required:
+      - code
+      - state
+      title: OAuthFinalizeRequest
+      description: Request model for OAuth callback finalization (frontend bridge and headless).
+    TokenEventSummary:
+      properties:
+        id:
+          type: string
+          title: Id
+        provider_id:
+          type: string
+          title: Provider Id
+        agent_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Id
+        event_type:
+          type: string
+          title: Event Type
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+        source:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source
+        provider_account_label:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Provider Account Label
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+          default: []
+        detail:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Detail
+        acknowledged_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Acknowledged At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - provider_id
+      - event_type
+      - created_at
+      title: TokenEventSummary
+      description: 'A single OAuth connection audit event, for the calling user.
+
+
+        Surfaces why/when a connection was removed so the UI can prompt a reconnect.
+
+        Carries no token or secret material.'
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ClientCredentialsProviderCreateRequest:
       properties:
         provider_id:
           type: string
@@ -679,6 +1029,66 @@ components:
         client_id:
           type: string
           title: Client Id
+        token_url:
+          type: string
+          title: Token Url
+        grant_type:
+          type: string
+          const: client_credentials
+          title: Grant Type
+        client_secret:
+          type: string
+          minLength: 1
+          title: Client Secret
+        token_endpoint_auth_method:
+          type: string
+          enum:
+          - client_secret_basic
+          - client_secret_post
+          title: Token Endpoint Auth Method
+          default: client_secret_post
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+        token_params:
+          $ref: '#/components/schemas/ClientCredentialsTokenParams-Input'
+      additionalProperties: false
+      type: object
+      required:
+      - provider_id
+      - name
+      - client_id
+      - token_url
+      - grant_type
+      - client_secret
+      title: ClientCredentialsProviderCreateRequest
+      description: 'Create a client_credentials provider.
+
+
+        Unknown fields are rejected so authorization-code settings (auth_url, PKCE,
+
+        redirect URIs) fail loudly instead of being silently dropped.'
+    AuthorizationCodeProviderCreateRequest:
+      properties:
+        provider_id:
+          type: string
+          title: Provider Id
+        name:
+          type: string
+          title: Name
+        client_id:
+          type: string
+          title: Client Id
+        token_url:
+          type: string
+          title: Token Url
+        grant_type:
+          type: string
+          const: authorization_code
+          title: Grant Type
+          default: authorization_code
         client_secret:
           anyOf:
           - type: string
@@ -686,10 +1096,8 @@ components:
           title: Client Secret
         auth_url:
           type: string
+          minLength: 1
           title: Auth Url
-        token_url:
-          type: string
-          title: Token Url
         uses_pkce:
           type: boolean
           title: Uses Pkce
@@ -705,6 +1113,7 @@ components:
             - microsoft
             - salesforce
             - slack
+            - x
           - type: 'null'
           title: Provider Type
         token_endpoint_auth_method:
@@ -715,25 +1124,90 @@ components:
           - client_secret_post
           title: Token Endpoint Auth Method
           default: client_secret_post
+        authorization_params:
+          additionalProperties:
+            type: string
+          type: object
+          title: Authorization Params
+        allowed_redirect_uris:
+          items:
+            type: string
+          type: array
+          title: Allowed Redirect Uris
+        default_redirect_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Redirect Uri
       type: object
       required:
       - provider_id
       - name
       - client_id
-      - auth_url
       - token_url
-      title: OAuthProviderCreateRequest
-      description: Request model for creating OAuth provider manually.
-    OAuthTokenStatusResponse:
+      - auth_url
+      title: AuthorizationCodeProviderCreateRequest
+      description: Create an authorization_code provider (the default when grant_type is omitted).
+    AuthAuthenticateRequest:
       properties:
-        has_token:
+        user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Id
+        ls_user_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ls User Id
+        agent_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Id
+        provider:
+          type: string
+          title: Provider
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+        use_agent_builder_public_oauth:
           type: boolean
-          title: Has Token
+          title: Use Agent Builder Public Oauth
+          default: false
+          include_in_schema: false
+        force_new:
+          type: boolean
+          title: Force New
+          default: false
+        token_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Token Id
+        redirect_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Redirect Uri
+        is_default:
+          type: boolean
+          title: Is Default
+          default: true
+        check_only:
+          type: boolean
+          title: Check Only
+          default: false
+          include_in_schema: false
       type: object
       required:
-      - has_token
-      title: OAuthTokenStatusResponse
-      description: Simple status indicating if a user has a token for a provider/agent.
+      - provider
+      - scopes
+      title: AuthAuthenticateRequest
+      description: Auth authenticate request.
     ValidationError:
       properties:
         loc:
@@ -749,6 +1223,11 @@ components:
         type:
           type: string
           title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
       required:
       - loc
@@ -800,160 +1279,64 @@ components:
       - updated_at
       title: OAuthTokenSummary
       description: Public-facing token summary — no sensitive data.
-    OAuthProviderResponse:
-      properties:
-        id:
-          type: string
-          title: Id
-        organization_id:
-          type: string
-          title: Organization Id
-        provider_id:
-          type: string
-          title: Provider Id
-        name:
-          type: string
-          title: Name
-        client_id:
-          type: string
-          title: Client Id
-        auth_url:
-          type: string
-          title: Auth Url
-        token_url:
-          type: string
-          title: Token Url
-        uses_pkce:
-          type: boolean
-          title: Uses Pkce
-        code_challenge_method:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Code Challenge Method
-        provider_type:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Provider Type
-        mcp_server_url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Mcp Server Url
-        token_endpoint_auth_method:
-          type: string
-          title: Token Endpoint Auth Method
-          default: client_secret_post
-        is_dynamic_client:
-          type: boolean
-          title: Is Dynamic Client
-          default: false
-        created_at:
-          type: string
-          format: date-time
-          title: Created At
-        updated_at:
-          type: string
-          format: date-time
-          title: Updated At
-      type: object
-      required:
-      - id
-      - organization_id
-      - provider_id
-      - name
-      - client_id
-      - auth_url
-      - token_url
-      - uses_pkce
-      - code_challenge_method
-      - created_at
-      - updated_at
-      title: OAuthProviderResponse
-      description: Response model for OAuth provider.
-    MCPOAuthProviderCreateRequest:
+    AuthWaitStatus:
+      type: string
+      enum:
+      - completed
+      - pending
+      - timeout
+      - not_found
+      title: AuthWaitStatus
+      description: Valid auth wait status values.
+    OAuthTokenImportRequest:
       properties:
         provider_id:
           type: string
           title: Provider Id
-        name:
+        access_token:
           type: string
-          title: Name
-        mcp_server_url:
-          type: string
-          title: Mcp Server Url
-      type: object
-      required:
-      - provider_id
-      - name
-      - mcp_server_url
-      title: MCPOAuthProviderCreateRequest
-      description: Request model for creating OAuth provider via MCP auto-discovery.
-    OAuthFinalizeRequest:
-      properties:
-        code:
-          type: string
-          title: Code
-        state:
-          type: string
-          title: State
-      type: object
-      required:
-      - code
-      - state
-      title: OAuthFinalizeRequest
-      description: Request model for frontend-bridged OAuth callback finalization.
-    AuthAuthenticateRequest:
-      properties:
-        user_id:
+          title: Access Token
+        refresh_token:
           anyOf:
           - type: string
           - type: 'null'
-          title: User Id
-        ls_user_id:
+          title: Refresh Token
+        expires_in_seconds:
           anyOf:
-          - type: string
+          - type: integer
           - type: 'null'
-          title: Ls User Id
-        agent_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Agent Id
-        provider:
-          type: string
-          title: Provider
+          title: Expires In Seconds
         scopes:
           items:
             type: string
           type: array
           title: Scopes
-        use_agent_builder_public_oauth:
-          type: boolean
-          title: Use Agent Builder Public Oauth
-          default: false
-          include_in_schema: false
-        force_new:
-          type: boolean
-          title: Force New
-          default: false
-        token_id:
+          default: []
+        metadata:
           anyOf:
-          - type: string
-            format: uuid
+          - additionalProperties: true
+            type: object
           - type: 'null'
-          title: Token Id
+          title: Metadata
         is_default:
           type: boolean
           title: Is Default
           default: true
       type: object
       required:
-      - provider
-      - scopes
-      title: AuthAuthenticateRequest
-      description: Auth authenticate request.
+      - provider_id
+      - access_token
+      title: OAuthTokenImportRequest
+      description: 'Import a directly-obtained OAuth token (no authorization-code exchange).
+
+
+        Used by the Slack managed-install flow, which receives a bot token inline
+
+        from ``apps.managedInstall`` rather than via the browser OAuth redirect. The
+
+        token is persisted for the caller''s org/user against ``provider_id`` (which
+
+        must already exist in the caller''s org).'
     AuthAuthenticateResponse:
       properties:
         status:
@@ -989,15 +1372,34 @@ components:
       - status
       title: AuthAuthenticateResponse
       description: Auth authenticate response.
-    HTTPValidationError:
+    ClientCredentialsTokenParams-Input:
       properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
+        audience:
+          anyOf:
+          - type: string
+            maxLength: 1000
+            minLength: 1
+          - type: 'null'
+          title: Audience
+        resource:
+          anyOf:
+          - type: string
+          - items:
+              type: string
+            type: array
+            maxItems: 10
+          title: Resource
+      additionalProperties: false
       type: object
-      title: HTTPValidationError
+      title: ClientCredentialsTokenParams
+      description: Optional extra fields for a client_credentials token request.
+    OAuthGrantType:
+      type: string
+      enum:
+      - authorization_code
+      - client_credentials
+      title: OAuthGrantType
+      description: OAuth 2 grant a provider uses to obtain access tokens.
     OAuthTokenUpdateRequest:
       properties:
         provider_account_label:
@@ -1013,6 +1415,145 @@ components:
       type: object
       title: OAuthTokenUpdateRequest
       description: Request model for updating a token's metadata.
+    OAuthTokenStatusBatchRequest:
+      properties:
+        provider_ids:
+          items:
+            type: string
+          type: array
+          title: Provider Ids
+      type: object
+      required:
+      - provider_ids
+      title: OAuthTokenStatusBatchRequest
+      description: Provider IDs to check token presence for, for the current user.
+    OAuthTokenImportResponse:
+      properties:
+        token_id:
+          type: string
+          title: Token Id
+      type: object
+      required:
+      - token_id
+      title: OAuthTokenImportResponse
+      description: Response for a token import — the created token id only, no secrets.
+    ClientCredentialsTokenParams-Output:
+      properties:
+        audience:
+          anyOf:
+          - type: string
+            maxLength: 1000
+            minLength: 1
+          - type: 'null'
+          title: Audience
+        resource:
+          items:
+            type: string
+          type: array
+          maxItems: 10
+          title: Resource
+      additionalProperties: false
+      type: object
+      title: ClientCredentialsTokenParams
+      description: Optional extra fields for a client_credentials token request.
+    OAuthProviderResponse:
+      properties:
+        id:
+          type: string
+          title: Id
+        organization_id:
+          type: string
+          title: Organization Id
+        provider_id:
+          type: string
+          title: Provider Id
+        name:
+          type: string
+          title: Name
+        client_id:
+          type: string
+          title: Client Id
+        auth_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Auth Url
+        token_url:
+          type: string
+          title: Token Url
+        grant_type:
+          $ref: '#/components/schemas/OAuthGrantType'
+          default: authorization_code
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+        token_params:
+          $ref: '#/components/schemas/ClientCredentialsTokenParams-Output'
+        uses_pkce:
+          type: boolean
+          title: Uses Pkce
+        code_challenge_method:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Code Challenge Method
+        provider_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Provider Type
+        mcp_server_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mcp Server Url
+        token_endpoint_auth_method:
+          type: string
+          title: Token Endpoint Auth Method
+          default: client_secret_post
+        authorization_params:
+          additionalProperties:
+            type: string
+          type: object
+          title: Authorization Params
+        is_dynamic_client:
+          type: boolean
+          title: Is Dynamic Client
+          default: false
+        allowed_redirect_uris:
+          items:
+            type: string
+          type: array
+          title: Allowed Redirect Uris
+        default_redirect_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Redirect Uri
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      type: object
+      required:
+      - id
+      - organization_id
+      - provider_id
+      - name
+      - client_id
+      - token_url
+      - uses_pkce
+      - code_challenge_method
+      - created_at
+      - updated_at
+      title: OAuthProviderResponse
+      description: Response model for OAuth provider.
     OAuthProviderUpdateRequest:
       properties:
         name:
@@ -1050,18 +1591,62 @@ components:
           - type: string
           - type: 'null'
           title: Code Challenge Method
+        authorization_params:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Authorization Params
+        scopes:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Scopes
+        token_params:
+          anyOf:
+          - $ref: '#/components/schemas/ClientCredentialsTokenParams-Input'
+          - type: 'null'
+        allowed_redirect_uris:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Allowed Redirect Uris
+        default_redirect_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Redirect Uri
       type: object
       title: OAuthProviderUpdateRequest
       description: Request model for updating OAuth provider.
-    AuthWaitStatus:
-      type: string
-      enum:
-      - completed
-      - pending
-      - timeout
-      - not_found
-      title: AuthWaitStatus
-      description: Valid auth wait status values.
+    MCPOAuthProviderCreateRequest:
+      properties:
+        provider_id:
+          type: string
+          title: Provider Id
+        name:
+          type: string
+          title: Name
+        mcp_server_url:
+          type: string
+          title: Mcp Server Url
+        allowed_redirect_uris:
+          items:
+            type: string
+          type: array
+          title: Allowed Redirect Uris
+      type: object
+      required:
+      - provider_id
+      - name
+      - mcp_server_url
+      title: MCPOAuthProviderCreateRequest
+      description: Request model for creating OAuth provider via MCP auto-discovery.
     AuthWaitResponse:
       properties:
         status:

@@ -8,6 +8,7 @@
     "langgraph-auth-service-v2-api-openapi.yml",
     "langgraph-deployments-v2-api-openapi.yml",
     "langgraph-integrations-v1-api-openapi.yml",
+    "langgraph-integrations-v2-api-openapi.yml",
     "langgraph-listeners-v2-api-openapi.yml"
   ],
   "archived": [],
@@ -20,14 +21,9 @@
     "langgraph-openapi.json: declared missing tag: Auth Service (v2)",
     "langgraph-openapi.json: declared missing tag: Deployments (v2)",
     "langgraph-openapi.json: declared missing tag: Integrations (v1)",
+    "langgraph-openapi.json: declared missing tag: Integrations (v2)",
     "langgraph-openapi.json: declared missing tag: Listeners (v2)",
-    "apis.yml register: already-registered"
+    "apis.yml register: written (+1 apis, 6 total)"
   ],
-  "skipped": [
-    "langgraph-agent-connections-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "langgraph-auth-service-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "langgraph-deployments-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "langgraph-integrations-v1-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "langgraph-listeners-v2-api-openapi.yml: previously refined output, superseded by openapi/_original/"
-  ]
+  "skipped": []
 }

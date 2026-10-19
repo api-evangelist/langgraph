@@ -3,7 +3,37 @@ info:
   title: LangSmith Deployment Control Plane Deployments (v2) API
   description: 'The LangSmith Deployment Control Plane API is used to programmatically create and manage
 
-    Agent Server deployments.'
+    Agent Server deployments. For example, the APIs can be orchestrated to
+
+    create custom CI/CD workflows.
+
+
+    ## Host
+
+    https://api.host.langchain.com
+
+
+    ## Authentication
+
+    To authenticate with the LangSmith Deployment Control Plane API, set the `X-Api-Key` header
+
+    to a valid LangSmith API key.
+
+
+    ## Versioning
+
+    Each endpoint path is prefixed with a version (e.g. `v1`, `v2`).
+
+
+    ## Quick Start
+
+    1. Call `POST /v2/deployments` to create a new Deployment. The response body contains the Deployment ID (`id`) and the ID of the latest (and first) revision (`latest_revision_id`).
+
+    1. Call `GET /v2/deployments/{deployment_id}` to retrieve the Deployment. Set `deployment_id` in the URL to the value of Deployment ID (`id`).
+
+    1. Poll for revision `status` until `status` is `DEPLOYED` by calling `GET /v2/deployments/{deployment_id}/revisions/{latest_revision_id}`.
+
+    1. Call `PATCH /v2/deployments/{deployment_id}` to update the deployment.'
   version: 0.1.0
 tags:
 - name: Deployments (v2)
@@ -51,6 +81,16 @@ paths:
           description: Name of the deployment to filter by.
           title: Name Contains
         description: Name of the deployment to filter by.
+      - name: name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Exact deployment name to filter by.
+          title: Name
+        description: Exact deployment name to filter by.
       - name: status
         in: query
         required: false
@@ -100,6 +140,8 @@ paths:
             - dev_free
             - dev
             - prod
+            - dev_zero
+            - dev_free_zero
             type: string
           - type: 'null'
           description: Deployment type to filter by.
@@ -115,6 +157,44 @@ paths:
           description: Comma separated list of deployment IDs to filter by.
           title: Deployment Ids
         description: Comma separated list of deployment IDs to filter by.
+      - name: url
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Serving URL of the deployment to filter by.
+          title: Url
+        description: Serving URL of the deployment to filter by.
+      - name: agent_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            minLength: 1
+            maxLength: 63
+            pattern: ^[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$
+          - type: 'null'
+          description: 'Exact agent ID (slug) to filter by: 1 to 63 lowercase letters, digits, or hyphens, starting with a letter. Requires agent mode.'
+          title: Agent Id
+        description: 'Exact agent ID (slug) to filter by: 1 to 63 lowercase letters, digits, or hyphens, starting with a letter. Requires agent mode.'
+      - name: agent_environment
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - local
+            - development
+            - staging
+            - production
+            type: string
+          - type: 'null'
+          description: Agent environment to filter by. Requires agent mode.
+          title: Agent Environment
+        description: Agent environment to filter by. Requires agent mode.
       responses:
         '200':
           description: Successful Response
@@ -157,6 +237,18 @@ paths:
             application/json:
               example:
                 detail: Error description.
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              example:
+                detail: A deployment named '{name}' already exists.
+        '501':
+          description: 'Not Implemented: the source is unavailable on this platform'
+          content:
+            application/json:
+              example:
+                detail: Local image builds ('internal_docker') are not available on AWS yet. Run `langgraph deploy --remote` to build from source instead.
         '422':
           description: Validation Error
           content:
@@ -209,6 +301,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /v2/deployments/free-count:
+    get:
+      tags:
+      - Deployments (v2)
+      summary: Get Free Deployment Count
+      description: Return the number of free deployments used by the caller's organization.
+      operationId: get_free_deployment_count_v2_deployments_free_count_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeDeploymentCountResponse'
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
   /v2/deployments/{deployment_id}:
     get:
       tags:
@@ -290,6 +400,12 @@ paths:
             application/json:
               example:
                 detail: Error description.
+        '501':
+          description: 'Not Implemented: the source is unavailable on this platform'
+          content:
+            application/json:
+              example:
+                detail: Local image builds ('internal_docker') are not available on AWS yet. Run `langgraph deploy --remote` to build from source instead.
         '422':
           description: Validation Error
           content:
@@ -319,10 +435,19 @@ paths:
         required: false
         schema:
           type: boolean
-          description: Optionally delete tracing project for the deployment.
+          description: Optionally delete the deployment's tracing project.
           default: false
           title: Delete Tracing Project
-        description: Optionally delete tracing project for the deployment.
+        description: Optionally delete the deployment's tracing project.
+      - name: force
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Force delete the deployment's control-plane metadata, skipping Kubernetes resource cleanup. Only works on a deployment that has already been soft-deleted by a prior delete call; force-deleting a still-active deployment returns 400. Use to clear stale deployments whose runtime is already gone. This is unrecoverable and may orphan remaining cluster-side resources. Reusing the deployment name after a force delete is unsupported and may attach a new deployment to those orphaned resources; use a different name.
+          default: false
+          title: Force
+        description: Force delete the deployment's control-plane metadata, skipping Kubernetes resource cleanup. Only works on a deployment that has already been soft-deleted by a prior delete call; force-deleting a still-active deployment returns 400. Use to clear stale deployments whose runtime is already gone. This is unrecoverable and may orphan remaining cluster-side resources. Reusing the deployment name after a force delete is unsupported and may attach a new deployment to those orphaned resources; use a different name.
       responses:
         '204':
           description: Successful Response
@@ -332,6 +457,106 @@ paths:
             application/json:
               example:
                 detail: Deployment ID {deployment_id} not found.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/deployments/{deployment_id}/deployment-tier:
+    patch:
+      tags:
+      - Deployments (v2)
+      summary: Patch Deployment Tier
+      description: Patch a deployment's fixed resource tier.
+      operationId: patch_deployment_tier_v2_deployments__deployment_id__deployment_tier_patch
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeploymentTierUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                detail: Deployment ID {deployment_id} not found.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                detail: Error description.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/deployments/{deployment_id}/resource-tiers:
+    patch:
+      tags:
+      - Deployments (v2)
+      summary: Patch Deployment Resource Tiers
+      description: Patch a deployment's compute and database resource tiers independently.
+      operationId: patch_deployment_resource_tiers_v2_deployments__deployment_id__resource_tiers_patch
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeploymentResourceTiersUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deployment'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                detail: Deployment ID {deployment_id} not found.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                detail: Error description.
         '422':
           description: Validation Error
           content:
@@ -411,6 +636,66 @@ paths:
             application/json:
               example:
                 detail: Deployment ID {deployment_id} not found.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Deployments (v2)
+      summary: Create Deployment Revision
+      description: 'Create a new revision for a deployment.
+
+
+        The dedicated create-revision entry point: unlike PATCH, this always
+
+        creates a revision and returns the created ``Revision`` directly.'
+      operationId: create_deployment_revision_v2_deployments__deployment_id__revisions_post
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevisionCreateRequest'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Revision'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                detail: Deployment ID {deployment_id} not found.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                detail: Error description.
+        '501':
+          description: 'Not Implemented: the source is unavailable on this platform'
+          content:
+            application/json:
+              example:
+                detail: Local image builds ('internal_docker') are not available on AWS yet. Run `langgraph deploy --remote` to build from source instead.
         '422':
           description: Validation Error
           content:
@@ -513,85 +798,463 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /v2/deployments/{deployment_id}/logs:
+    get:
+      tags:
+      - Deployments (v2)
+      summary: List Deployment Logs
+      description: List deploy logs for a deployment (across all revisions).
+      operationId: list_deployment_logs_v2_deployments__deployment_id__logs_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment ID
+      - name: start_time
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Start Time
+      - name: end_time
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Time
+      - name: order
+        in: query
+        required: false
+        schema:
+          enum:
+          - asc
+          - desc
+          type: string
+          default: asc
+          title: Order
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 50
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Offset
+      - name: query
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Query
+      - name: level
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - DEBUG
+            - INFO
+            - WARNING
+            - ERROR
+            - CRITICAL
+            type: string
+          - type: 'null'
+          title: Level
+      - name: run_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogsResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                detail: Deployment ID {deployment_id} not found.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/deployments/{deployment_id}/revisions/{revision_id}/logs:
+    get:
+      tags:
+      - Deployments (v2)
+      summary: List Revision Logs
+      description: List build or deploy logs for a specific revision of a deployment.
+      operationId: list_revision_logs_v2_deployments__deployment_id__revisions__revision_id__logs_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment ID
+      - name: revision_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Revision ID
+      - name: start_time
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Start Time
+      - name: end_time
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Time
+      - name: order
+        in: query
+        required: false
+        schema:
+          enum:
+          - asc
+          - desc
+          type: string
+          default: asc
+          title: Order
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 50
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Offset
+      - name: query
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Query
+      - name: level
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - DEBUG
+            - INFO
+            - WARNING
+            - ERROR
+            - CRITICAL
+            type: string
+          - type: 'null'
+          title: Level
+      - name: run_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Run Id
+      - name: type
+        in: query
+        required: true
+        schema:
+          enum:
+          - build
+          - deploy
+          type: string
+          description: 'Which logs to return: build-time or deploy-time.'
+          title: Type
+        description: 'Which logs to return: build-time or deploy-time.'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogsResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                detail: Deployment ID {deployment_id} not found.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/deployments/{deployment_id}/revisions/{revision_id}/interruption:
+    post:
+      tags:
+      - Deployments (v2)
+      summary: Interrupt Deployment Revision
+      description: Interrupt an in-progress revision build/deploy.
+      operationId: interrupt_deployment_revision_v2_deployments__deployment_id__revisions__revision_id__interruption_post
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment ID
+      - name: revision_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Revision ID
+      responses:
+        '204':
+          description: Successful Response
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                detail: Deployment ID {deployment_id} not found.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v2/deployment-logs:
+    get:
+      tags:
+      - Deployments (v2)
+      summary: List Deployment Log Entries
+      description: List build or deploy log entries for a deployment.
+      operationId: list_deployment_log_entries_v2_deployment_logs_get
+      security:
+      - API Key: []
+      - Tenant ID: []
+      - Bearer Auth: []
+      parameters:
+      - name: deployment_id
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment Id
+      - name: revision_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Revision Id
+      - name: log_type
+        in: query
+        required: false
+        schema:
+          enum:
+          - BUILD
+          - DEPLOY
+          type: string
+          default: DEPLOY
+          title: Log Type
+      - name: start_time
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Start Time
+      - name: end_time
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: End Time
+      - name: sort_order
+        in: query
+        required: false
+        schema:
+          enum:
+          - asc
+          - desc
+          type: string
+          default: asc
+          title: Sort Order
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Page Size
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      - name: query
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Query
+      - name: level
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - DEBUG
+            - INFO
+            - WARNING
+            - ERROR
+            - CRITICAL
+            type: string
+          - type: 'null'
+          title: Level
+      - name: run_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Run Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentLogsList'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    SourceConfigRequest:
+    Revision:
       properties:
-        integration_id:
-          anyOf:
-          - type: string
-            format: uuid
-          - type: 'null'
-          title: Integration ID
-          description: The ID of the integration used for the deployment.<br><br>Retrieve this value from the `GET /v1/integrations/github/install` endpoint. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `github` source.
-        repo_url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Repository URL
-          description: The URL of the git repository used for the deployment.<br><br>This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `github` source.
-        deployment_type:
-          anyOf:
-          - type: string
-            enum:
-            - dev_free
-            - dev
-            - prod
-          - type: 'null'
-          title: Deployment Type
-          description: The type of deployment to create.<br><br>See [Deployment Types](https://langchain-ai.github.io/langgraph/concepts/langgraph_control_plane/#deployment-types) for more details. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `github` source.
-        build_on_push:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Build On Push
-          description: Whether to build a new revision for the deployment on push to the `source_revision_config.repo_ref` (e.g. git branch).<br><br>Cannot be enabled when `source_revision_config.repo_ref` specifies a tag (starts with `refs/tags/`). Tags are immutable and cannot trigger automatic builds on push.<br><br>Only applicable for `github` source.
-        custom_url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Custom URL
-          description: The custom URL of the deployment.<br><br>This field can only be set for `external_docker` source deployments. However, it will be set automatically for `github` source deployments (read only).
-        resource_spec:
-          anyOf:
-          - $ref: '#/components/schemas/ResourceSpec-Input'
-          - type: 'null'
-        listener_id:
-          anyOf:
-          - type: string
-            format: uuid
-          - type: 'null'
-          title: Listener ID
-          description: The ID of the listener used for the deployment.<br><br>Retrieve this value from the `GET /v2/listeners` endpoint. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `external_docker` source.
-        listener_config:
-          anyOf:
-          - $ref: '#/components/schemas/ListenerConfig'
-          - type: 'null'
-        install_command:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Install Command
-          description: The custom install command to run for your deployment. This only applies to JS deployments. This command will be run from the root of your repository - NOT where your langgraph.json file lives (unless these are the same place). If not provided, we will autodetect the command based on the presence of yarn/npm/etc. files.
-        build_command:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Build Command
-          description: The custom build command to run for your deployment. This only applies to JS deployments. This command will be run from where your langgraph.json file lives. This is helpful for using shared workspaces in your deployments, without having to provide a postinstall command or something similar in your package.json.
-      type: object
-      title: SourceConfigRequest
-      description: 'Fields for a deployment that are specific to the `source`, but do not require a new revision when modified or cannot be modified.<br>
-
-        <br>
-
-        All fields are nullable, but are validated based on the `source`.'
-    Deployment:
-      properties:
-        name:
+        id:
           type: string
-          title: Name
-          description: Name of the deployment.<br><br>A LangSmith tracing project with the same name will also automatically be created. This cannot be changed once the deployment is created.
+          format: uuid
+          title: ID
+          description: The ID of the revision.<br><br>This is a read-only field.
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: The creation time of the revision.<br><br>This is a read-only field.
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+          description: The last update time of the revision.<br><br>This is a read-only field.
+        status:
+          type: string
+          enum:
+          - CREATING
+          - QUEUED
+          - AWAITING_BUILD
+          - BUILDING
+          - AWAITING_DEPLOY
+          - DEPLOYING
+          - CREATE_FAILED
+          - BUILD_FAILED
+          - DEPLOY_FAILED
+          - DEPLOYED
+          - SKIPPED
+          - INTERRUPTED
+          - UNKNOWN
+          title: Status
+          description: The status of the revision.<br><br>This is a read-only field.
+        status_message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status Message
+          description: Human-readable detail about the current status, such as why a build or deploy failed.<br><br>This is a read-only field.
         source:
           type: string
           enum:
@@ -599,193 +1262,54 @@ components:
           - external_docker
           - internal_docker
           - internal_source
+          - internal_template
           title: Source
-          description: Deploy from a GitHub repository (`github`) or an external Docker image (`external_docker`).<br><br>Deploying from GitHub is only available for Cloud SaaS deployments. Deploying from an external Docker image is only available for self-hosted deployments. This cannot be changed once the deployment is created.
-        source_config:
-          $ref: '#/components/schemas/SourceConfig'
+          description: Deploy from a GitHub repository (`github`), an external Docker image (`external_docker`), a CLI-pushed image (`internal_docker`), uploaded source (`internal_source`), or a prebuilt LangChain template (`internal_template`).<br><br>Deploying from GitHub, internal Docker, internal source, or a template is only available for Cloud SaaS deployments. Deploying from an external Docker image is only available for self-hosted deployments. This cannot be changed once the deployment is created.
         source_revision_config:
           $ref: '#/components/schemas/SourceRevisionConfig'
-        secrets:
-          items:
-            $ref: '#/components/schemas/Secret'
-          type: array
-          title: Secrets
-        secret_references:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/SecretReference'
-            type: array
-          - type: 'null'
-          title: Secret References
-          description: List of Kubernetes Secret references.<br><br>Only applicable for `external_docker` source.
-        id:
-          type: string
-          format: uuid
-          title: ID
-          description: The ID of the deployment.<br><br>This is a read-only field.
-        tenant_id:
-          type: string
-          format: uuid
-          title: Tenant ID
-          description: The ID of the tenant that owns the deployment.<br><br>This is a read-only field.
-        created_at:
-          type: string
-          format: date-time
-          title: Created At
-          description: The creation time of the deployment.<br><br>This is a read-only field.
-        updated_at:
-          type: string
-          format: date-time
-          title: Updated At
-          description: The last update time of the deployment.<br><br>This is a read-only field.
-        status:
-          type: string
-          enum:
-          - AWAITING_DATABASE
-          - READY
-          - UNUSED
-          - AWAITING_DELETE
-          - UNKNOWN
-          title: Status
-          description: The status of the deployment.<br><br>This is a read-only field.
-        latest_revision_id:
-          anyOf:
-          - type: string
-            format: uuid
-          - type: 'null'
-          title: Latest Revision ID
-          description: The ID of the latest revision of the deployment.<br><br>This is a read-only field.
-        active_revision_id:
-          anyOf:
-          - type: string
-            format: uuid
-          - type: 'null'
-          title: Active Revision ID
-          description: The ID of the current (actively deployed) revision of the deployment.<br><br>This is a read-only field.
-        image_version:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Image Version
-          description: Image version of the deployment.
       type: object
       required:
-      - name
-      - source
-      - source_config
-      - source_revision_config
-      - secrets
       - id
-      - tenant_id
       - created_at
       - updated_at
       - status
-      - latest_revision_id
-      - active_revision_id
-      title: Deployment
-      description: Deployment resource.
-    ValidationError:
+      - source
+      - source_revision_config
+      title: Revision
+      description: Revision resource.
+    HPAScalingRules:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
+        stabilization_window_seconds:
+          anyOf:
+          - type: integer
+            maximum: 3600.0
+            minimum: 0.0
+          - type: 'null'
+          title: Stabilization Window Seconds
+          description: Seconds of past recommendations considered before scaling. Between 0 and 3600 (one hour). Required in a scaling override.
+        select_policy:
+          anyOf:
+          - type: string
+            enum:
+            - Max
+            - Min
+            - Disabled
+          - type: 'null'
+          title: Select Policy
+          description: 'Which policy to apply when several allow a change: Max, Min, or Disabled to turn this direction off. Required in a scaling override.'
+        policies:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/HPAScalingPolicy'
+            type: array
+            minItems: 1
+          - type: 'null'
+          title: Policies
+          description: Scaling policies that may be used while scaling in this direction. At least one policy is required in a scaling override.
+      additionalProperties: false
       type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    RevisionsList:
-      properties:
-        resources:
-          items:
-            $ref: '#/components/schemas/Revision'
-          type: array
-          title: Resources
-        offset:
-          type: integer
-          title: Offset
-          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
-      type: object
-      required:
-      - resources
-      - offset
-      title: RevisionsList
-    Volume:
-      properties:
-        name:
-          type: string
-          title: Name
-          description: Volume's name. Must be a DNS_LABEL and unique within the pod.
-        configMap:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Configmap
-          description: ConfigMap represents a configMap that should populate this volume.
-        secret:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Secret
-          description: Secret represents a secret that should populate this volume.
-        emptyDir:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Emptydir
-          description: EmptyDir represents a temporary directory that shares a pod's lifetime.
-        persistentVolumeClaim:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Persistentvolumeclaim
-          description: PersistentVolumeClaim represents a reference to a PersistentVolumeClaim.
-        nfs:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Nfs
-          description: NFS represents an NFS mount on the host that shares a pod's lifetime.
-        projected:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Projected
-          description: Projected represents a volume that projects several volume sources into the same directory.
-        downwardAPI:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Downwardapi
-          description: DownwardAPI represents downward API about the pod that should populate this volume.
-        csi:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Csi
-          description: CSI represents a volume that should be handled by an external CSI driver.
-      type: object
-      title: Volume
-      description: Kubernetes Volume specification.
+      title: HPAScalingRules
+      description: HorizontalPodAutoscaler scaling rules for one direction (scale up or scale down).
     ResourceSpec-Output:
       properties:
         min_scale:
@@ -803,11 +1327,11 @@ components:
         cpu:
           anyOf:
           - type: number
-            maximum: 8.0
             minimum: 0.1
           - type: 'null'
+          maximum: 8.0
           title: CPU
-          description: CPU request in cores for a single replica of the deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If cpu_limit is not set, limit defaults to 2x this value.
+          description: CPU request in cores for a single replica of the deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If cpu_limit is not set, limit defaults to 2x this value unless cpu_limit_enabled is false.
           examples:
           - 0.1
           - 0.5
@@ -817,11 +1341,11 @@ components:
         cpu_limit:
           anyOf:
           - type: number
-            maximum: 16.0
             minimum: 0.1
           - type: 'null'
+          maximum: 16.0
           title: CPU Limit
-          description: CPU limit in cores for a single replica of the deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x cpu.
+          description: CPU limit in cores for a single replica of the deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x cpu; set cpu_limit_enabled to false to run without a CPU limit.
           examples:
           - 0.2
           - 1
@@ -856,11 +1380,11 @@ components:
         queue_cpu:
           anyOf:
           - type: number
-            maximum: 8.0
             minimum: 0.1
           - type: 'null'
+          maximum: 8.0
           title: Queue CPU
-          description: CPU request in cores for a single replica of the queue deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not provided, defaults to the same value as `cpu`. If queue_cpu_limit is not set, limit defaults to 2x this value.
+          description: CPU request in cores for a single replica of the queue deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not provided, defaults to the same value as `cpu`. If queue_cpu_limit is not set, limit defaults to 2x this value unless queue_cpu_limit_enabled is false.
           examples:
           - 0.1
           - 0.5
@@ -869,11 +1393,11 @@ components:
         queue_cpu_limit:
           anyOf:
           - type: number
-            maximum: 16.0
             minimum: 0.1
           - type: 'null'
+          maximum: 16.0
           title: Queue CPU Limit
-          description: CPU limit in cores for a single replica of the queue deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x queue_cpu.
+          description: CPU limit in cores for a single replica of the queue deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x queue_cpu; set queue_cpu_limit_enabled to false to run without a CPU limit.
           examples:
           - 0.2
           - 1
@@ -892,72 +1416,12 @@ components:
           - type: 'null'
           title: Queue Memory Limit (MB)
           description: Memory limit (MB) of a single replica of the queue deployment. If not set, defaults to 2x queue_memory_mb.
-        orchestrator_cpu:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Orchestrator CPU
-          description: do not use
-        orchestrator_cpu_limit:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Orchestrator CPU Limit
-          description: do not use
-        orchestrator_memory_mb:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Orchestrator Memory (MB)
-          description: do not use
-        orchestrator_memory_limit_mb:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Orchestrator Memory Limit (MB)
-          description: do not use
-        orchestrator_min_scale:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Orchestrator Min Scale
-          description: do not use
-        orchestrator_max_scale:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Orchestrator Max Scale
-          description: do not use
-        executor_cpu:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Executor CPU
-          description: do not use
-        executor_cpu_limit:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Executor CPU Limit
-          description: do not use
-        executor_memory_mb:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Executor Memory (MB)
-          description: do not use
-        executor_memory_limit_mb:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Executor Memory Limit (MB)
-          description: do not use
         redis_cpu:
           anyOf:
           - type: number
-            maximum: 8.0
             minimum: 0.1
           - type: 'null'
+          maximum: 8.0
           title: Redis CPU
           description: CPU request in cores for the Redis deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If redis_cpu_limit is not set, limit defaults to 2x this value.
           examples:
@@ -968,9 +1432,9 @@ components:
         redis_cpu_limit:
           anyOf:
           - type: number
-            maximum: 16.0
             minimum: 0.1
           - type: 'null'
+          maximum: 16.0
           title: Redis CPU Limit
           description: CPU limit in cores for the Redis deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x redis_cpu.
           examples:
@@ -991,6 +1455,32 @@ components:
           - type: 'null'
           title: Redis Memory Limit (MB)
           description: Memory limit (MB) of the Redis deployment. If not set, defaults to redis_memory_mb.
+        core_cpu:
+          anyOf:
+          - type: number
+            minimum: 0.1
+          - type: 'null'
+          title: Core API CPU
+          description: CPU request in cores for the core API process (only used when the deployment runs the core API as a sidecar). If core_cpu_limit is not set, limit defaults to 2x this value.
+        core_cpu_limit:
+          anyOf:
+          - type: number
+            minimum: 0.1
+          - type: 'null'
+          title: Core API CPU Limit
+          description: CPU limit in cores for the core API process. If not set, defaults to 2x core_cpu.
+        core_memory_mb:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Core API Memory (MB)
+          description: Memory request (MB) for the core API process. If core_memory_limit_mb is not set, limit defaults to 2x this value.
+        core_memory_limit_mb:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Core API Memory Limit (MB)
+          description: Memory limit (MB) for the core API process. If not set, defaults to 2x core_memory_mb.
         labels:
           anyOf:
           - additionalProperties:
@@ -1089,6 +1579,58 @@ components:
           - type: 'null'
           title: Database Max Connections
           description: Maximum number of connections allowed to the Postgres database.
+        cpu_target_percent:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 1.0
+          - type: 'null'
+          title: CPU Scaling Target (%)
+          description: Average CPU usage, as a percentage of `cpu_limit` (or of `cpu` when `cpu_limit_enabled` is false), at which the autoscaler adds api-server replicas. Required when `cpu_scaling_enabled` is true; must be null when it is false. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        cpu_scaling_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Scale on CPU
+          description: Whether the api-server autoscaler scales on CPU. When false, the CPU trigger is removed and, with no other trigger, the api-server keeps its current replica count within `min_scale` and `max_scale`. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        cpu_limit_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: CPU Limit Enabled
+          description: Whether the api-server container has a CPU limit. When false, `cpu_limit` must be null. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        autoscaling_behavior:
+          anyOf:
+          - $ref: '#/components/schemas/HPAScalingBehavior-Output'
+          - type: 'null'
+          title: Autoscaling Behavior
+          description: HorizontalPodAutoscaler scale-up and scale-down behavior for the api-server autoscaler. Both directions are required, each with `stabilization_window_seconds`, `select_policy`, and at least one policy. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        queue_cpu_target_percent:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 1.0
+          - type: 'null'
+          title: Queue CPU Scaling Target (%)
+          description: Average CPU usage, as a percentage of `queue_cpu_limit` (or of `queue_cpu` when `queue_cpu_limit_enabled` is false), at which the autoscaler adds queue replicas. Required when `queue_cpu_scaling_enabled` is true; must be null when it is false. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        queue_cpu_scaling_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Queue Scale on CPU
+          description: Whether the queue autoscaler scales on CPU. When false, the CPU trigger is removed; under KEDA the queue-depth trigger remains. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        queue_cpu_limit_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Queue CPU Limit Enabled
+          description: Whether the queue container has a CPU limit. When false, `queue_cpu_limit` must be null. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        queue_autoscaling_behavior:
+          anyOf:
+          - $ref: '#/components/schemas/HPAScalingBehavior-Output'
+          - type: 'null'
+          title: Queue Autoscaling Behavior
+          description: HorizontalPodAutoscaler scale-up and scale-down behavior for the queue autoscaler. Both directions are required, each with `stabilization_window_seconds`, `select_policy`, and at least one policy. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
       type: object
       title: ResourceSpec
       description: 'Resource specification for the deployment.<br>
@@ -1096,181 +1638,80 @@ components:
         <br>
 
         When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision and overwrite the existing resource_spec for the deployment. Only applicable for `external_docker` source.'
-    ResourceRequirements:
-      properties:
-        limits:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: Limits
-          description: Limits describes the maximum amount of compute resources allowed.
-        requests:
-          anyOf:
-          - additionalProperties:
-              type: string
-            type: object
-          - type: 'null'
-          title: Requests
-          description: Requests describes the minimum amount of compute resources required.
-      type: object
-      title: ResourceRequirements
-      description: Compute resource requirements.
-    Revision:
-      properties:
-        id:
-          type: string
-          format: uuid
-          title: ID
-          description: The ID of the revision.<br><br>This is a read-only field.
-        created_at:
-          type: string
-          format: date-time
-          title: Created At
-          description: The creation time of the revision.<br><br>This is a read-only field.
-        updated_at:
-          type: string
-          format: date-time
-          title: Updated At
-          description: The last update time of the revision.<br><br>This is a read-only field.
-        status:
-          type: string
-          enum:
-          - CREATING
-          - QUEUED
-          - AWAITING_BUILD
-          - BUILDING
-          - AWAITING_DEPLOY
-          - DEPLOYING
-          - CREATE_FAILED
-          - BUILD_FAILED
-          - DEPLOY_FAILED
-          - DEPLOYED
-          - SKIPPED
-          - INTERRUPTED
-          - UNKNOWN
-          title: Status
-          description: The status of the revision.<br><br>This is a read-only field.
-        source:
-          type: string
-          enum:
-          - github
-          - external_docker
-          - internal_docker
-          - internal_source
-          title: Source
-          description: Deploy from a GitHub repository (`github`) or an external Docker image (`external_docker`).<br><br>Deploying from GitHub is only available for Cloud SaaS deployments. Deploying from an external Docker image is only available for self-hosted deployments. This cannot be changed once the deployment is created.
-        source_revision_config:
-          $ref: '#/components/schemas/SourceRevisionConfig'
-      type: object
-      required:
-      - id
-      - created_at
-      - updated_at
-      - status
-      - source
-      - source_revision_config
-      title: Revision
-      description: Revision resource.
-    Secret:
+    Volume:
       properties:
         name:
           type: string
           title: Name
-          description: Name of the secret
-        value:
-          type: string
-          title: Value
-          description: Value of the secret
+          description: Volume's name. Must be a DNS_LABEL and unique within the pod.
+        configMap:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Configmap
+          description: ConfigMap represents a configMap that should populate this volume.
+        secret:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Secret
+          description: Secret represents a secret that should populate this volume.
+        emptyDir:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Emptydir
+          description: EmptyDir represents a temporary directory that shares a pod's lifetime.
+        persistentVolumeClaim:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Persistentvolumeclaim
+          description: PersistentVolumeClaim represents a reference to a PersistentVolumeClaim.
+        nfs:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Nfs
+          description: NFS represents an NFS mount on the host that shares a pod's lifetime.
+        projected:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Projected
+          description: Projected represents a volume that projects several volume sources into the same directory.
+        downwardAPI:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Downwardapi
+          description: DownwardAPI represents downward API about the pod that should populate this volume.
+        csi:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Csi
+          description: CSI represents a volume that should be handled by an external CSI driver.
       type: object
-      required:
-      - name
-      - value
-      title: Secret
-      description: 'Secret for a deployment.<br>
-
-        <br>
-
-        Secrets are accessible as environment variables in the deployment''s container. In addition to user-defined secrets, Agent Server supports [pre-defined environment variables](https://langchain-ai.github.io/langgraph/cloud/reference/env_var/) that can be configured to augment the functionality of a deployment. When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision.'
-    SourceRevisionConfig:
-      properties:
-        repo_ref:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Repo Ref
-          description: 'The git ref of the repository used for the deployment.<br><br>Supports:<br>- **Branches**: Specify just the branch name (e.g., `main`, `develop`)<br>- **Tags**: Specify the full ref path (e.g., `refs/tags/v1.0.0`)<br><br>When using a tag, `source_config.build_on_push` must be set to `false` since tags are immutable.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Only applicable for `github` source.'
-        langgraph_config_path:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: LangGraph Configuration Path
-          description: The path to the LangGraph configuration file (`langgraph.json`) used for the deployment.<br><br>Required on create for buildable sources (`github`, `internal_source`). Must be `null` for all other sources.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision.
-        image_uri:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Image URI
-          description: The URI of the Docker image used for the deployment.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Applicable for `external_docker` source.
-        source_tarball_path:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Source Tarball Path
-          description: The object path of the uploaded source tarball.<br><br>Must be an object path obtained from the `POST /deployments/{deployment_id}/upload-url` endpoint. Arbitrary paths are not accepted.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Only applicable for `internal_source` source.
-        repo_commit_sha:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Repo commit SHA
-          description: The commit SHA of the git repository used for the deployment.<br><br>This is a read-only field. Only applicable for `github` source.
-      type: object
-      title: SourceRevisionConfig
-      description: 'Source revision configuration.<br>
-
-        <br>
-
-        For a `Deployment` resource, the field values refer to the latest revision of the `Deployment`. For a `Revision` resource, the field values refer to the `Revision` itself.'
-    VolumeMount:
-      properties:
-        name:
-          type: string
-          title: Name
-          description: This must match the Name of a Volume.
-        mountPath:
-          type: string
-          title: Mountpath
-          description: Path within the container at which the volume should be mounted.
-        subPath:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Subpath
-          description: Path within the volume from which the container's volume should be mounted.
-        mountPropagation:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Mountpropagation
-          description: Determines how mounts are propagated from the host to container and the other way around.
-        readOnly:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Readonly
-          description: Mounted read-only if true, read-write otherwise.
-        subPathExpr:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Subpathexpr
-          description: Expanded path within the volume from which the container's volume should be mounted.
-      type: object
-      title: VolumeMount
-      description: Kubernetes VolumeMount specification.
+      title: Volume
+      description: Kubernetes Volume specification.
     DeploymentPatchRequest:
       properties:
+        display_name:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Display Name
+          description: Human-readable display name for the deployment. Updating this does not create a new revision.
         revision_source:
           anyOf:
           - type: string
@@ -1281,6 +1722,235 @@ components:
           - type: 'null'
           title: Revision Source
           description: Override the source for this revision. If omitted, falls back to deployment's default source.
+        source_config:
+          anyOf:
+          - $ref: '#/components/schemas/SourceConfigRequest'
+          - type: 'null'
+        source_revision_config:
+          anyOf:
+          - $ref: '#/components/schemas/SourceRevisionConfigRequest'
+          - type: 'null'
+        tracked_repo_ref:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Tracked Repo Ref
+          description: Retarget the git ref the deployment tracks without creating a new revision. Use `source_revision_config.repo_ref` to deploy from a ref instead.
+        deployment_tier:
+          anyOf:
+          - $ref: '#/components/schemas/DeploymentTier'
+          - type: 'null'
+          title: Deployment Tier
+          description: Fixed resource tier to apply to the deployment. Serverless deployments support `SERVERLESS_S`, `SERVERLESS_M`, and `SERVERLESS_L`; dedicated deployments support `DEDICATED_S`, `DEDICATED_M`, and `DEDICATED_L`.
+        secrets:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/Secret'
+            type: array
+          - type: 'null'
+          title: Secrets
+        secret_references:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/SecretReference'
+            type: array
+          - type: 'null'
+          title: Secret References
+          description: List of Kubernetes Secret references.<br><br>Only applicable for `external_docker` source.
+        route_through_gateway:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Route Through Gateway
+          description: Enable or disable routing OpenAI and Anthropic model calls through the LangSmith LLM gateway.
+      type: object
+      title: DeploymentPatchRequest
+      description: 'Request body for patching a deployment.<br>
+
+        <br>
+
+        Patching a deployment may trigger a new revision depending on the provided `source` configurations.'
+    Deployment:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Name
+          description: Deployment name. Required when agent is omitted; retained as the agent identity in the production environment when agent associations are enabled. Omit when supplying agent to generate a deployment name.
+        agent:
+          anyOf:
+          - $ref: '#/components/schemas/DeploymentAgent'
+          - type: 'null'
+          description: Agent and environment to deploy. Both fields are required when supplied.
+        source:
+          type: string
+          enum:
+          - github
+          - external_docker
+          - internal_docker
+          - internal_source
+          - internal_template
+          title: Source
+          description: Deploy from a GitHub repository (`github`), an external Docker image (`external_docker`), a CLI-pushed image (`internal_docker`), uploaded source (`internal_source`), or a prebuilt LangChain template (`internal_template`).<br><br>Deploying from GitHub, internal Docker, internal source, or a template is only available for Cloud SaaS deployments. Deploying from an external Docker image is only available for self-hosted deployments. This cannot be changed once the deployment is created.
+        source_config:
+          $ref: '#/components/schemas/SourceConfig'
+        source_revision_config:
+          $ref: '#/components/schemas/SourceRevisionConfig'
+        secrets:
+          items:
+            $ref: '#/components/schemas/Secret'
+          type: array
+          title: Secrets
+        secret_references:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/SecretReference'
+            type: array
+          - type: 'null'
+          title: Secret References
+          description: List of Kubernetes Secret references.<br><br>Only applicable for `external_docker` source.
+        shareable:
+          type: boolean
+          title: Shareable
+          description: Whether the deployment can be shared with LangSmith users outside the organization.
+          default: false
+        route_through_gateway:
+          type: boolean
+          title: Route Through Gateway
+          description: Route OpenAI and Anthropic model calls through the LangSmith LLM gateway.
+          default: false
+        id:
+          type: string
+          format: uuid
+          title: ID
+          description: The ID of the deployment.<br><br>This is a read-only field.
+        tenant_id:
+          type: string
+          format: uuid
+          title: Tenant ID
+          description: The ID of the tenant that owns the deployment.<br><br>This is a read-only field.
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: The creation time of the deployment.<br><br>This is a read-only field.
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+          description: The last update time of the deployment.<br><br>This is a read-only field.
+        status:
+          type: string
+          enum:
+          - AWAITING_DATABASE
+          - READY
+          - UNUSED
+          - AWAITING_DELETE
+          - AWAITING_FINAL_DELETE
+          - UNKNOWN
+          title: Status
+          description: The status of the deployment.<br><br>This is a read-only field.
+        latest_revision_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Latest Revision ID
+          description: The ID of the latest revision of the deployment.<br><br>This is a read-only field.
+        active_revision_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Active Revision ID
+          description: The ID of the current (actively deployed) revision of the deployment.<br><br>This is a read-only field.
+        tracer_session_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Tracer Session ID
+          description: The ID of the LangSmith tracing project the deployment writes runs to.<br><br>This is a read-only field.
+        url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: URL
+          description: The deployment's serving URL, once provisioned.<br><br>This is a read-only field.
+        is_preview:
+          type: boolean
+          title: Is Preview
+          description: Whether this is a preview-build deployment. Full preview metadata (parent deployment, PR, lifecycle) is available from the preview-builds details endpoint.<br><br>This is a read-only field.
+          default: false
+        image_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Image Version
+          description: Image version of the deployment.
+        display_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Display Name
+          description: Human-readable display name for the deployment.
+        is_managed_deep_agent:
+          type: boolean
+          title: Is Managed Deep Agent
+          description: Whether this deployment is a Managed Deep Agent deployment.<br><br>This is a read-only field.
+          default: false
+        deployment_tier:
+          anyOf:
+          - $ref: '#/components/schemas/DeploymentTier'
+          - type: 'null'
+          title: Deployment Tier
+          description: The selected fixed resource tier for this deployment. Existing deployments without an explicit selection return the default tier for their deployment type. When compute and database tiers differ, this reflects the compute tier. Null when compute has a custom size.
+        compute_tier:
+          anyOf:
+          - $ref: '#/components/schemas/DeploymentTier'
+          - type: string
+            const: LEGACY_CUSTOM
+          - type: 'null'
+          title: Compute Tier
+          description: The selected fixed resource tier for this deployment's compute. Deployments without an explicit selection return the default tier for their deployment type. `LEGACY_CUSTOM` means the compute has a custom size that matches no tier.
+        database_tier:
+          anyOf:
+          - $ref: '#/components/schemas/DeploymentTier'
+          - type: string
+            const: LEGACY_CUSTOM
+          - type: 'null'
+          title: Database Tier
+          description: The selected fixed resource tier for this deployment's database. Deployments without an explicit selection return the default tier for their deployment type. `LEGACY_CUSTOM` means the database has a custom size that matches no tier.
+      type: object
+      required:
+      - source
+      - source_config
+      - source_revision_config
+      - secrets
+      - id
+      - tenant_id
+      - created_at
+      - updated_at
+      - status
+      - latest_revision_id
+      - active_revision_id
+      title: Deployment
+      description: Deployment resource.
+    RevisionCreateRequest:
+      properties:
+        revision_source:
+          anyOf:
+          - type: string
+            enum:
+            - github
+            - internal_docker
+            - internal_source
+          - type: 'null'
+          title: Revision Source
+          description: Override the source for this revision. If omitted, falls back to the deployment's default source.
         source_config:
           anyOf:
           - $ref: '#/components/schemas/SourceConfigRequest'
@@ -1303,58 +1973,24 @@ components:
             type: array
           - type: 'null'
           title: Secret References
-          description: List of Kubernetes Secret references.<br><br>Only applicable for `external_docker` source.
+        shareable:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Shareable
+          description: Whether the deployment can be shared with LangSmith users outside the organization after creating this revision. If omitted, the current sharing setting is preserved.
+        route_through_gateway:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Route Through Gateway
+          description: Enable or disable routing OpenAI and Anthropic model calls through the LangSmith LLM gateway.
       type: object
-      title: DeploymentPatchRequest
-      description: 'Request body for patching a deployment.<br>
+      title: RevisionCreateRequest
+      description: 'Request body for creating a new revision of an existing deployment.
 
-        <br>
 
-        Patching a deployment may trigger a new revision depending on the provided `source` configurations.'
-    SourceRevisionConfigRequest:
-      properties:
-        repo_ref:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Repo Ref
-          description: 'The git ref of the repository used for the deployment.<br><br>Supports:<br>- **Branches**: Specify just the branch name (e.g., `main`, `develop`)<br>- **Tags**: Specify the full ref path (e.g., `refs/tags/v1.0.0`)<br><br>When using a tag, `source_config.build_on_push` must be set to `false` since tags are immutable.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Only applicable for `github` source.'
-        langgraph_config_path:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: LangGraph Configuration Path
-          description: The path to the LangGraph configuration file (`langgraph.json`) used for the deployment.<br><br>Required on create for buildable sources (`github`, `internal_source`). Must be `null` for all other sources.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision.
-        image_uri:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Image URI
-          description: The URI of the Docker image used for the deployment.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Applicable for `external_docker` source.
-        source_tarball_path:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Source Tarball Path
-          description: The object path of the uploaded source tarball.<br><br>Must be an object path obtained from the `POST /deployments/{deployment_id}/upload-url` endpoint. Arbitrary paths are not accepted.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Only applicable for `internal_source` source.
-      type: object
-      title: SourceRevisionConfigRequest
-      description: 'Fields for a deployment that are specific to the `source` and require a new revision when modified.<br>
-
-        <br>
-
-        All fields are nullable, but are validated based on the `source`.'
-    LocalObjectReference:
-      properties:
-        name:
-          type: string
-          title: Name
-          description: Name of the referent (e.g., name of a Secret for imagePullSecrets).
-      type: object
-      required:
-      - name
-      title: LocalObjectReference
-      description: Reference to an object in the same namespace.
+        The revision-relevant subset of ``DeploymentPatchRequest``.'
     Container:
       properties:
         name:
@@ -1442,71 +2078,52 @@ components:
       - image
       title: Container
       description: Container specification for init and sidecar containers.
-    DeploymentCreateRequest:
+    HPAScalingBehavior-Output:
       properties:
-        name:
+        scale_up:
+          anyOf:
+          - $ref: '#/components/schemas/HPAScalingRules'
+          - type: 'null'
+          description: Rules for scaling up. Required in a scaling override.
+        scale_down:
+          anyOf:
+          - $ref: '#/components/schemas/HPAScalingRules'
+          - type: 'null'
+          description: Rules for scaling down. Required in a scaling override.
+      additionalProperties: false
+      type: object
+      title: HPAScalingBehavior
+      description: HorizontalPodAutoscaler behavior, mirroring `HorizontalPodAutoscalerBehavior`.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    DeploymentAgent:
+      properties:
+        agent_id:
           type: string
-          title: Name
-          description: Name of the deployment.<br><br>A LangSmith tracing project with the same name will also automatically be created. This cannot be changed once the deployment is created.
-        source:
+          maxLength: 255
+          minLength: 1
+          title: Agent Id
+        environment:
           type: string
           enum:
-          - github
-          - external_docker
-          - internal_docker
-          - internal_source
-          title: Source
-          description: Deploy from a GitHub repository (`github`) or an external Docker image (`external_docker`).<br><br>Deploying from GitHub is only available for Cloud SaaS deployments. Deploying from an external Docker image is only available for self-hosted deployments. This cannot be changed once the deployment is created.
-        source_config:
-          $ref: '#/components/schemas/SourceConfigRequest'
-        source_revision_config:
-          $ref: '#/components/schemas/SourceRevisionConfigRequest'
-        secrets:
-          items:
-            $ref: '#/components/schemas/Secret'
-          type: array
-          title: Secrets
-        secret_references:
-          anyOf:
-          - items:
-              $ref: '#/components/schemas/SecretReference'
-            type: array
-          - type: 'null'
-          title: Secret References
-          description: List of Kubernetes Secret references.<br><br>Only applicable for `external_docker` source.
+          - local
+          - development
+          - staging
+          - production
+          title: Environment
       type: object
       required:
-      - name
-      - source
-      - source_config
-      - source_revision_config
-      - secrets
-      title: DeploymentCreateRequest
-      description: Request body for creating a deployment.
-    EnvVar:
-      properties:
-        name:
-          type: string
-          title: Name
-          description: Name of the environment variable. Must be a C_IDENTIFIER.
-        value:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Value
-          description: Variable value. Defaults to empty string.
-        valueFrom:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Valuefrom
-          description: Source for the environment variable's value. Cannot be used if value is not empty.
-      type: object
-      required:
-      - name
-      title: EnvVar
-      description: Environment variable for a container.
+      - agent_id
+      - environment
+      title: DeploymentAgent
+      description: Agent identity and environment for a deployment.
     ResourceSpec-Input:
       properties:
         min_scale:
@@ -1524,11 +2141,11 @@ components:
         cpu:
           anyOf:
           - type: number
-            maximum: 8.0
             minimum: 0.1
           - type: 'null'
+          maximum: 8.0
           title: CPU
-          description: CPU request in cores for a single replica of the deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If cpu_limit is not set, limit defaults to 2x this value.
+          description: CPU request in cores for a single replica of the deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If cpu_limit is not set, limit defaults to 2x this value unless cpu_limit_enabled is false.
           examples:
           - 0.1
           - 0.5
@@ -1538,11 +2155,11 @@ components:
         cpu_limit:
           anyOf:
           - type: number
-            maximum: 16.0
             minimum: 0.1
           - type: 'null'
+          maximum: 16.0
           title: CPU Limit
-          description: CPU limit in cores for a single replica of the deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x cpu.
+          description: CPU limit in cores for a single replica of the deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x cpu; set cpu_limit_enabled to false to run without a CPU limit.
           examples:
           - 0.2
           - 1
@@ -1577,11 +2194,11 @@ components:
         queue_cpu:
           anyOf:
           - type: number
-            maximum: 8.0
             minimum: 0.1
           - type: 'null'
+          maximum: 8.0
           title: Queue CPU
-          description: CPU request in cores for a single replica of the queue deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not provided, defaults to the same value as `cpu`. If queue_cpu_limit is not set, limit defaults to 2x this value.
+          description: CPU request in cores for a single replica of the queue deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not provided, defaults to the same value as `cpu`. If queue_cpu_limit is not set, limit defaults to 2x this value unless queue_cpu_limit_enabled is false.
           examples:
           - 0.1
           - 0.5
@@ -1590,11 +2207,11 @@ components:
         queue_cpu_limit:
           anyOf:
           - type: number
-            maximum: 16.0
             minimum: 0.1
           - type: 'null'
+          maximum: 16.0
           title: Queue CPU Limit
-          description: CPU limit in cores for a single replica of the queue deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x queue_cpu.
+          description: CPU limit in cores for a single replica of the queue deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x queue_cpu; set queue_cpu_limit_enabled to false to run without a CPU limit.
           examples:
           - 0.2
           - 1
@@ -1613,72 +2230,12 @@ components:
           - type: 'null'
           title: Queue Memory Limit (MB)
           description: Memory limit (MB) of a single replica of the queue deployment. If not set, defaults to 2x queue_memory_mb.
-        orchestrator_cpu:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Orchestrator CPU
-          description: do not use
-        orchestrator_cpu_limit:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Orchestrator CPU Limit
-          description: do not use
-        orchestrator_memory_mb:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Orchestrator Memory (MB)
-          description: do not use
-        orchestrator_memory_limit_mb:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Orchestrator Memory Limit (MB)
-          description: do not use
-        orchestrator_min_scale:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Orchestrator Min Scale
-          description: do not use
-        orchestrator_max_scale:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Orchestrator Max Scale
-          description: do not use
-        executor_cpu:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Executor CPU
-          description: do not use
-        executor_cpu_limit:
-          anyOf:
-          - type: number
-          - type: 'null'
-          title: Executor CPU Limit
-          description: do not use
-        executor_memory_mb:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Executor Memory (MB)
-          description: do not use
-        executor_memory_limit_mb:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Executor Memory Limit (MB)
-          description: do not use
         redis_cpu:
           anyOf:
           - type: number
-            maximum: 8.0
             minimum: 0.1
           - type: 'null'
+          maximum: 8.0
           title: Redis CPU
           description: CPU request in cores for the Redis deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If redis_cpu_limit is not set, limit defaults to 2x this value.
           examples:
@@ -1689,9 +2246,9 @@ components:
         redis_cpu_limit:
           anyOf:
           - type: number
-            maximum: 16.0
             minimum: 0.1
           - type: 'null'
+          maximum: 16.0
           title: Redis CPU Limit
           description: CPU limit in cores for the Redis deployment. Supports fractional values (e.g. 0.5 for 500m). Values are rounded to 1 decimal place. If not set, defaults to 2x redis_cpu.
           examples:
@@ -1712,6 +2269,32 @@ components:
           - type: 'null'
           title: Redis Memory Limit (MB)
           description: Memory limit (MB) of the Redis deployment. If not set, defaults to redis_memory_mb.
+        core_cpu:
+          anyOf:
+          - type: number
+            minimum: 0.1
+          - type: 'null'
+          title: Core API CPU
+          description: CPU request in cores for the core API process (only used when the deployment runs the core API as a sidecar). If core_cpu_limit is not set, limit defaults to 2x this value.
+        core_cpu_limit:
+          anyOf:
+          - type: number
+            minimum: 0.1
+          - type: 'null'
+          title: Core API CPU Limit
+          description: CPU limit in cores for the core API process. If not set, defaults to 2x core_cpu.
+        core_memory_mb:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Core API Memory (MB)
+          description: Memory request (MB) for the core API process. If core_memory_limit_mb is not set, limit defaults to 2x this value.
+        core_memory_limit_mb:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Core API Memory Limit (MB)
+          description: Memory limit (MB) for the core API process. If not set, defaults to 2x core_memory_mb.
         labels:
           anyOf:
           - additionalProperties:
@@ -1810,6 +2393,58 @@ components:
           - type: 'null'
           title: Database Max Connections
           description: Maximum number of connections allowed to the Postgres database.
+        cpu_target_percent:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 1.0
+          - type: 'null'
+          title: CPU Scaling Target (%)
+          description: Average CPU usage, as a percentage of `cpu_limit` (or of `cpu` when `cpu_limit_enabled` is false), at which the autoscaler adds api-server replicas. Required when `cpu_scaling_enabled` is true; must be null when it is false. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        cpu_scaling_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Scale on CPU
+          description: Whether the api-server autoscaler scales on CPU. When false, the CPU trigger is removed and, with no other trigger, the api-server keeps its current replica count within `min_scale` and `max_scale`. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        cpu_limit_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: CPU Limit Enabled
+          description: Whether the api-server container has a CPU limit. When false, `cpu_limit` must be null. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        autoscaling_behavior:
+          anyOf:
+          - $ref: '#/components/schemas/HPAScalingBehavior-Input'
+          - type: 'null'
+          title: Autoscaling Behavior
+          description: HorizontalPodAutoscaler scale-up and scale-down behavior for the api-server autoscaler. Both directions are required, each with `stabilization_window_seconds`, `select_policy`, and at least one policy. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        queue_cpu_target_percent:
+          anyOf:
+          - type: integer
+            maximum: 100.0
+            minimum: 1.0
+          - type: 'null'
+          title: Queue CPU Scaling Target (%)
+          description: Average CPU usage, as a percentage of `queue_cpu_limit` (or of `queue_cpu` when `queue_cpu_limit_enabled` is false), at which the autoscaler adds queue replicas. Required when `queue_cpu_scaling_enabled` is true; must be null when it is false. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        queue_cpu_scaling_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Queue Scale on CPU
+          description: Whether the queue autoscaler scales on CPU. When false, the CPU trigger is removed; under KEDA the queue-depth trigger remains. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        queue_cpu_limit_enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Queue CPU Limit Enabled
+          description: Whether the queue container has a CPU limit. When false, `queue_cpu_limit` must be null. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
+        queue_autoscaling_behavior:
+          anyOf:
+          - $ref: '#/components/schemas/HPAScalingBehavior-Input'
+          - type: 'null'
+          title: Queue Autoscaling Behavior
+          description: HorizontalPodAutoscaler scale-up and scale-down behavior for the queue autoscaler. Both directions are required, each with `stabilization_window_seconds`, `select_policy`, and at least one policy. The scaling override fields (`cpu_target_percent`, `cpu_scaling_enabled`, `cpu_limit_enabled`, `autoscaling_behavior`, and their `queue_` counterparts) must be set all together or not at all. Requires the `ENABLE_LGP_SCALING_OVERRIDES` setting.
       type: object
       title: ResourceSpec
       description: 'Resource specification for the deployment.<br>
@@ -1817,113 +2452,74 @@ components:
         <br>
 
         When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision and overwrite the existing resource_spec for the deployment. Only applicable for `external_docker` source.'
-    SourceConfig:
+    HPAScalingPolicy:
       properties:
-        integration_id:
-          anyOf:
-          - type: string
-            format: uuid
-          - type: 'null'
-          title: Integration ID
-          description: The ID of the integration used for the deployment.<br><br>Retrieve this value from the `GET /v1/integrations/github/install` endpoint. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `github` source.
-        repo_url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Repository URL
-          description: The URL of the git repository used for the deployment.<br><br>This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `github` source.
-        deployment_type:
-          anyOf:
-          - type: string
-            enum:
-            - dev_free
-            - dev
-            - prod
-          - type: 'null'
-          title: Deployment Type
-          description: The type of deployment to create.<br><br>See [Deployment Types](https://langchain-ai.github.io/langgraph/concepts/langgraph_control_plane/#deployment-types) for more details. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `github` source.
-        build_on_push:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Build On Push
-          description: Whether to build a new revision for the deployment on push to the `source_revision_config.repo_ref` (e.g. git branch).<br><br>Cannot be enabled when `source_revision_config.repo_ref` specifies a tag (starts with `refs/tags/`). Tags are immutable and cannot trigger automatic builds on push.<br><br>Only applicable for `github` source.
-        custom_url:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Custom URL
-          description: The custom URL of the deployment.<br><br>This field can only be set for `external_docker` source deployments. However, it will be set automatically for `github` source deployments (read only).
-        resource_spec:
-          anyOf:
-          - $ref: '#/components/schemas/ResourceSpec-Output'
-          - type: 'null'
-        listener_id:
-          anyOf:
-          - type: string
-            format: uuid
-          - type: 'null'
-          title: Listener ID
-          description: The ID of the listener used for the deployment.<br><br>Retrieve this value from the `GET /v2/listeners` endpoint. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `external_docker` source.
-        listener_config:
-          anyOf:
-          - $ref: '#/components/schemas/ListenerConfig'
-          - type: 'null'
-        install_command:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Install Command
-          description: The custom install command to run for your deployment. This only applies to JS deployments. This command will be run from the root of your repository - NOT where your langgraph.json file lives (unless these are the same place). If not provided, we will autodetect the command based on the presence of yarn/npm/etc. files.
-        build_command:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Build Command
-          description: The custom build command to run for your deployment. This only applies to JS deployments. This command will be run from where your langgraph.json file lives. This is helpful for using shared workspaces in your deployments, without having to provide a postinstall command or something similar in your package.json.
-      type: object
-      title: SourceConfig
-      description: Source configuration.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    DeploymentsList:
-      properties:
-        resources:
-          items:
-            $ref: '#/components/schemas/Deployment'
-          type: array
-          title: Resources
-        offset:
+        type:
+          type: string
+          enum:
+          - Pods
+          - Percent
+          title: Type
+          description: Whether `value` is an absolute pod count (Pods) or a percentage of the current replicas (Percent).
+        value:
           type: integer
-          title: Offset
-          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
+          maximum: 1000.0
+          minimum: 1.0
+          title: Value
+          description: Amount of change the policy permits within `period_seconds`. Between 1 and 1000.
+        period_seconds:
+          type: integer
+          maximum: 1800.0
+          minimum: 1.0
+          title: Period Seconds
+          description: Window of time for which the policy holds. Between 1 and 1800 seconds (30 minutes).
+      additionalProperties: false
       type: object
       required:
-      - resources
-      - offset
-      title: DeploymentsList
-    ListenerConfig:
+      - type
+      - value
+      - period_seconds
+      title: HPAScalingPolicy
+      description: 'One HorizontalPodAutoscaler scaling policy: the change allowed per period.'
+    DeploymentLogsList:
       properties:
-        k8s_namespace:
+        items:
+          items:
+            $ref: '#/components/schemas/DeploymentLogEntry'
+          type: array
+          title: Items
+        next_cursor:
           anyOf:
           - type: string
           - type: 'null'
-          title: K8S Namespace
-          description: Kubernetes namespace where the deployment will be deployed to.<br><br>This cannot be changed (`PATCH`) once the deployment is created. Only applicable for deployments of listeners with `k8s` compute type.
+          title: Next Cursor
       type: object
-      title: ListenerConfig
-      description: 'Listener configuration for the deployment.<br>
-
-        <br>
-
-        All fields are nullable, but are validated based on `compute_type` of the listener ID. Only applicable for `external_docker` source.'
+      title: DeploymentLogsList
+      description: Canonical cursor-paginated deployment-log collection.
+    EnvVar:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Name of the environment variable. Must be a C_IDENTIFIER.
+        value:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Value
+          description: Variable value. Defaults to empty string.
+        valueFrom:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Valuefrom
+          description: Source for the environment variable's value. Cannot be used if value is not empty.
+      type: object
+      required:
+      - name
+      title: EnvVar
+      description: Environment variable for a container.
     SecretReference:
       properties:
         name:
@@ -1945,6 +2541,592 @@ components:
       - secret_key
       title: SecretReference
       description: Reference to an existing Kubernetes Secret to populate an environment variable.
+    SourceRevisionConfig:
+      properties:
+        repo_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Repo Ref
+          description: 'The git ref of the repository used for the deployment.<br><br>Supports:<br>- **Branches**: Specify just the branch name (e.g., `main`, `develop`)<br>- **Tags**: Specify the full ref path (e.g., `refs/tags/v1.0.0`)<br><br>When using a tag, `source_config.build_on_push` must be set to `false` since tags are immutable.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Only applicable for `github` source.'
+        langgraph_config_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: LangGraph Configuration Path
+          description: The path to the LangGraph configuration file (`langgraph.json`) used for the deployment.<br><br>Required on create for buildable sources (`github`, `internal_source`). Must be `null` for all other sources.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision.
+        image_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Image URI
+          description: The URI of the Docker image used for the deployment.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Applicable for `external_docker` source.
+        source_tarball_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Tarball Path
+          description: The object path of the uploaded source tarball.<br><br>Must be an object path obtained from the `POST /deployments/{deployment_id}/upload-url` endpoint. Arbitrary paths are not accepted.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Only applicable for `internal_source` source.
+        repo_commit_sha:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Repo commit SHA
+          description: The commit SHA of the git repository used for the deployment.<br><br>This is a read-only field. Only applicable for `github` source.
+        repo_commit_title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Repo commit title
+          description: The first line of the commit message at `repo_commit_sha`.<br><br>This is a read-only field. Only applicable for `github` source. `null` for revisions created before this field existed, or when GitHub could not return the commit.
+      type: object
+      title: SourceRevisionConfig
+      description: 'Source revision configuration.<br>
+
+        <br>
+
+        For a `Deployment` resource, the field values refer to the latest revision of the `Deployment`. For a `Revision` resource, the field values refer to the `Revision` itself.'
+    ListenerConfig:
+      properties:
+        k8s_namespace:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: K8S Namespace
+          description: Kubernetes namespace where the deployment will be deployed to.<br><br>This cannot be changed (`PATCH`) once the deployment is created. Only applicable for deployments of listeners with `k8s` compute type.
+      type: object
+      title: ListenerConfig
+      description: 'Listener configuration for the deployment.<br>
+
+        <br>
+
+        All fields are nullable, but are validated based on `compute_type` of the listener ID. Only applicable for `external_docker` source.'
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    DeploymentLogEntry:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Identifier of the log line, unique within the deployment.
+        timestamp:
+          type: integer
+          title: Timestamp
+          description: When the line was written, in Unix milliseconds.
+        message:
+          type: string
+          title: Message
+          description: The log message, including any exception text.
+        level:
+          type: string
+          title: Level
+          description: Severity, such as INFO or ERROR.
+        source:
+          anyOf:
+          - type: string
+            enum:
+            - API
+            - QUEUE
+            - BUILD
+            - PLATFORM
+          - type: 'null'
+          title: Source
+          description: 'What wrote the line: the API server, a queue worker, the image build, or the platform itself.'
+        replica:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Replica
+          description: Name of the replica (pod) that wrote the line.
+        attributes:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Attributes
+          description: Selected fields of a structured (JSON) log line, such as run_id, thread_id and HTTP status. Limited to 8 KB per line.
+        has_truncated_attributes:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Has Truncated Attributes
+          description: Present and true when some attributes were left out to fit the limits.
+      type: object
+      required:
+      - id
+      - timestamp
+      - message
+      - level
+      title: DeploymentLogEntry
+      description: One line of deployment build or server logs.
+    DeploymentResourceTiersUpdateRequest:
+      properties:
+        compute_tier:
+          anyOf:
+          - $ref: '#/components/schemas/DeploymentTier'
+          - type: 'null'
+          title: Compute Tier
+          description: Fixed resource tier to apply to the deployment's compute. Serverless deployments support `SERVERLESS_S`, `SERVERLESS_M`, and `SERVERLESS_L`; dedicated deployments support `DEDICATED_S`, `DEDICATED_M`, and `DEDICATED_L`. Leave `null` to keep the current compute tier.
+        database_tier:
+          anyOf:
+          - $ref: '#/components/schemas/DeploymentTier'
+          - type: 'null'
+          title: Database Tier
+          description: Fixed resource tier to apply to the deployment's database. Only supported for dedicated deployments (`DEDICATED_S`, `DEDICATED_M`, `DEDICATED_L`). Leave `null` to keep the current database tier.
+      type: object
+      title: DeploymentResourceTiersUpdateRequest
+      description: Request body for updating a deployment's scaling configuration.
+    HPAScalingBehavior-Input:
+      properties:
+        scale_up:
+          anyOf:
+          - $ref: '#/components/schemas/HPAScalingRules'
+          - type: 'null'
+          description: Rules for scaling up. Required in a scaling override.
+        scale_down:
+          anyOf:
+          - $ref: '#/components/schemas/HPAScalingRules'
+          - type: 'null'
+          description: Rules for scaling down. Required in a scaling override.
+      additionalProperties: false
+      type: object
+      title: HPAScalingBehavior
+      description: HorizontalPodAutoscaler behavior, mirroring `HorizontalPodAutoscalerBehavior`.
+    Secret:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Name of the secret
+        value:
+          type: string
+          title: Value
+          description: Value of the secret
+      type: object
+      required:
+      - name
+      - value
+      title: Secret
+      description: 'Secret for a deployment.<br>
+
+        <br>
+
+        Secrets are accessible as environment variables in the deployment''s container. In addition to user-defined secrets, Agent Server supports [pre-defined environment variables](https://langchain-ai.github.io/langgraph/cloud/reference/env_var/) that can be configured to augment the functionality of a deployment. When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision.'
+    SourceConfig:
+      properties:
+        integration_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Integration ID
+          description: 'The ID of the integration used for the deployment.<br><br>Retrieve this value from the `GET /v1/integrations/github/install` endpoint.<br><br>When updating a deployment (`PATCH`), this may be omitted while changing `repo_url`: the workspace integration with access to the new repository is used. Updating this field does not create a new revision. Only applicable for `github` source.'
+        repo_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Repository URL
+          description: The URL of the git repository used for the deployment.<br><br>When updating a deployment (`PATCH`), set this field to point the deployment at a renamed, transferred, or different repository. The repository must be accessible through one of the workspace's GitHub integrations and contain the deployment's LangGraph configuration file at the tracked git ref. Updating this field does not create a new revision; set `source_revision_config.repo_ref` in the same request to deploy from the new repository. Only applicable for `github` source.
+        deployment_type:
+          anyOf:
+          - type: string
+            enum:
+            - dev_free
+            - dev
+            - prod
+            - dev_zero
+            - dev_free_zero
+          - type: 'null'
+          title: Deployment Type
+          description: The type of deployment to create.<br><br>See [Deployment Types](https://langchain-ai.github.io/langgraph/concepts/langgraph_control_plane/#deployment-types) for more details. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `github` source.
+        build_on_push:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Build On Push
+          description: Whether to build a new revision for the deployment on push to the `source_revision_config.repo_ref` (e.g. git branch).<br><br>Cannot be enabled when `source_revision_config.repo_ref` specifies a tag (starts with `refs/tags/`). Tags are immutable and cannot trigger automatic builds on push.<br><br>Only applicable for `github` source.
+        custom_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Custom URL
+          description: The custom URL of the deployment.<br><br>Updating this field creates a new revision to refresh the deployment URL in its environment.<br><br>This field can only be set for `external_docker` source deployments. However, it will be set automatically for `github` source deployments (read only).
+        resource_spec:
+          anyOf:
+          - $ref: '#/components/schemas/ResourceSpec-Output'
+          - type: 'null'
+        listener_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Listener ID
+          description: The ID of the listener used for the deployment.<br><br>Retrieve this value from the `GET /v2/listeners` endpoint. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `external_docker` source.
+        listener_config:
+          anyOf:
+          - $ref: '#/components/schemas/ListenerConfig'
+          - type: 'null'
+        install_command:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Install Command
+          description: The custom install command to run for your deployment. This only applies to JS deployments using 'github' or 'internal_source'. Updating this field creates a new revision. This command will be run from the root of your repository - NOT where your langgraph.json file lives (unless these are the same place). If not provided, we will autodetect the command based on the presence of yarn/npm/etc. files.
+        build_command:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Build Command
+          description: The custom build command to run for your deployment. This only applies to JS deployments using 'github' or 'internal_source'. Updating this field creates a new revision. This command will be run from where your langgraph.json file lives. This is helpful for using shared workspaces in your deployments, without having to provide a postinstall command or something similar in your package.json.
+        repo_branch:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Repo branch
+          description: The git branch the deployment tracks for new revisions.<br><br>This is a read-only field. Only applicable for `github` source.
+      type: object
+      title: SourceConfig
+      description: Source configuration.
+    SourceConfigRequest:
+      properties:
+        integration_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Integration ID
+          description: 'The ID of the integration used for the deployment.<br><br>Retrieve this value from the `GET /v1/integrations/github/install` endpoint.<br><br>When updating a deployment (`PATCH`), this may be omitted while changing `repo_url`: the workspace integration with access to the new repository is used. Updating this field does not create a new revision. Only applicable for `github` source.'
+        repo_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Repository URL
+          description: The URL of the git repository used for the deployment.<br><br>When updating a deployment (`PATCH`), set this field to point the deployment at a renamed, transferred, or different repository. The repository must be accessible through one of the workspace's GitHub integrations and contain the deployment's LangGraph configuration file at the tracked git ref. Updating this field does not create a new revision; set `source_revision_config.repo_ref` in the same request to deploy from the new repository. Only applicable for `github` source.
+        deployment_type:
+          anyOf:
+          - type: string
+            enum:
+            - dev_free
+            - dev
+            - prod
+            - dev_zero
+            - dev_free_zero
+          - type: 'null'
+          title: Deployment Type
+          description: The type of deployment to create.<br><br>See [Deployment Types](https://langchain-ai.github.io/langgraph/concepts/langgraph_control_plane/#deployment-types) for more details. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `github` source.
+        build_on_push:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Build On Push
+          description: Whether to build a new revision for the deployment on push to the `source_revision_config.repo_ref` (e.g. git branch).<br><br>Cannot be enabled when `source_revision_config.repo_ref` specifies a tag (starts with `refs/tags/`). Tags are immutable and cannot trigger automatic builds on push.<br><br>Only applicable for `github` source.
+        custom_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Custom URL
+          description: The custom URL of the deployment.<br><br>Updating this field creates a new revision to refresh the deployment URL in its environment.<br><br>This field can only be set for `external_docker` source deployments. However, it will be set automatically for `github` source deployments (read only).
+        resource_spec:
+          anyOf:
+          - $ref: '#/components/schemas/ResourceSpec-Input'
+          - type: 'null'
+        listener_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Listener ID
+          description: The ID of the listener used for the deployment.<br><br>Retrieve this value from the `GET /v2/listeners` endpoint. This cannot be changed (`PATCH`) once the deployment is created. Only applicable for `external_docker` source.
+        listener_config:
+          anyOf:
+          - $ref: '#/components/schemas/ListenerConfig'
+          - type: 'null'
+        install_command:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Install Command
+          description: The custom install command to run for your deployment. This only applies to JS deployments using 'github' or 'internal_source'. Updating this field creates a new revision. This command will be run from the root of your repository - NOT where your langgraph.json file lives (unless these are the same place). If not provided, we will autodetect the command based on the presence of yarn/npm/etc. files.
+        build_command:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Build Command
+          description: The custom build command to run for your deployment. This only applies to JS deployments using 'github' or 'internal_source'. Updating this field creates a new revision. This command will be run from where your langgraph.json file lives. This is helpful for using shared workspaces in your deployments, without having to provide a postinstall command or something similar in your package.json.
+      type: object
+      title: SourceConfigRequest
+      description: 'Deployment configuration fields specific to the `source`.<br>
+
+        <br>
+
+        All fields are nullable, but are validated based on the `source`.
+
+        Updating `custom_url`, `resource_spec`, `install_command`, or `build_command` creates a new revision.'
+    VolumeMount:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: This must match the Name of a Volume.
+        mountPath:
+          type: string
+          title: Mountpath
+          description: Path within the container at which the volume should be mounted.
+        subPath:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subpath
+          description: Path within the volume from which the container's volume should be mounted.
+        mountPropagation:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Mountpropagation
+          description: Determines how mounts are propagated from the host to container and the other way around.
+        readOnly:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Readonly
+          description: Mounted read-only if true, read-write otherwise.
+        subPathExpr:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subpathexpr
+          description: Expanded path within the volume from which the container's volume should be mounted.
+      type: object
+      title: VolumeMount
+      description: Kubernetes VolumeMount specification.
+    LogsResponse:
+      properties:
+        logs:
+          items:
+            $ref: '#/components/schemas/DeploymentLogEntry'
+          type: array
+          title: Logs
+          default: []
+        next_offset:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Offset
+      type: object
+      title: LogsResponse
+      description: Log lines plus a pagination cursor.
+    ResourceRequirements:
+      properties:
+        limits:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Limits
+          description: Limits describes the maximum amount of compute resources allowed.
+        requests:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Requests
+          description: Requests describes the minimum amount of compute resources required.
+      type: object
+      title: ResourceRequirements
+      description: Compute resource requirements.
+    DeploymentTierUpdateRequest:
+      properties:
+        deployment_tier:
+          $ref: '#/components/schemas/DeploymentTier'
+          title: Deployment Tier
+          description: Fixed resource tier to apply to the deployment. Serverless deployments support `SERVERLESS_S`, `SERVERLESS_M`, and `SERVERLESS_L`; dedicated deployments support `DEDICATED_S`, `DEDICATED_M`, and `DEDICATED_L`.
+      type: object
+      required:
+      - deployment_tier
+      title: DeploymentTierUpdateRequest
+      description: Request body for updating a deployment's fixed resource tier.
+    DeploymentCreateRequest:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+          title: Name
+          description: Deployment name. Required when agent is omitted; retained as the agent identity in the production environment when agent associations are enabled. Omit when supplying agent to generate a deployment name.
+        agent:
+          anyOf:
+          - $ref: '#/components/schemas/DeploymentAgent'
+          - type: 'null'
+          description: Agent and environment to deploy. Both fields are required when supplied.
+        source:
+          type: string
+          enum:
+          - github
+          - external_docker
+          - internal_docker
+          - internal_source
+          - internal_template
+          title: Source
+          description: Deploy from a GitHub repository (`github`), an external Docker image (`external_docker`), a CLI-pushed image (`internal_docker`), uploaded source (`internal_source`), or a prebuilt LangChain template (`internal_template`).<br><br>Deploying from GitHub, internal Docker, internal source, or a template is only available for Cloud SaaS deployments. Deploying from an external Docker image is only available for self-hosted deployments. This cannot be changed once the deployment is created.
+        source_config:
+          $ref: '#/components/schemas/SourceConfigRequest'
+        source_revision_config:
+          $ref: '#/components/schemas/SourceRevisionConfigRequest'
+        secrets:
+          items:
+            $ref: '#/components/schemas/Secret'
+          type: array
+          title: Secrets
+        secret_references:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/SecretReference'
+            type: array
+          - type: 'null'
+          title: Secret References
+          description: List of Kubernetes Secret references.<br><br>Only applicable for `external_docker` source.
+        shareable:
+          type: boolean
+          title: Shareable
+          description: Whether the deployment can be shared with LangSmith users outside the organization.
+          default: false
+        route_through_gateway:
+          type: boolean
+          title: Route Through Gateway
+          description: Route OpenAI and Anthropic model calls through the LangSmith LLM gateway.
+          default: false
+      type: object
+      required:
+      - source
+      - source_config
+      - source_revision_config
+      - secrets
+      title: DeploymentCreateRequest
+      description: Request body for creating a deployment.
+    DeploymentTier:
+      type: string
+      enum:
+      - SERVERLESS_S
+      - SERVERLESS_M
+      - SERVERLESS_L
+      - DEDICATED_S
+      - DEDICATED_M
+      - DEDICATED_L
+      title: DeploymentTier
+    LocalObjectReference:
+      properties:
+        name:
+          type: string
+          title: Name
+          description: Name of the referent (e.g., name of a Secret for imagePullSecrets).
+      type: object
+      required:
+      - name
+      title: LocalObjectReference
+      description: Reference to an object in the same namespace.
+    RevisionsList:
+      properties:
+        resources:
+          items:
+            $ref: '#/components/schemas/Revision'
+          type: array
+          title: Resources
+        offset:
+          type: integer
+          title: Offset
+          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
+      type: object
+      required:
+      - resources
+      - offset
+      title: RevisionsList
+    SourceRevisionConfigRequest:
+      properties:
+        repo_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Repo Ref
+          description: 'The git ref of the repository used for the deployment.<br><br>Supports:<br>- **Branches**: Specify just the branch name (e.g., `main`, `develop`)<br>- **Tags**: Specify the full ref path (e.g., `refs/tags/v1.0.0`)<br><br>When using a tag, `source_config.build_on_push` must be set to `false` since tags are immutable.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Only applicable for `github` source.'
+        langgraph_config_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: LangGraph Configuration Path
+          description: The path to the LangGraph configuration file (`langgraph.json`) used for the deployment.<br><br>Required on create for buildable sources (`github`, `internal_source`). Must be `null` for all other sources.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision.
+        image_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Image URI
+          description: The URI of the Docker image used for the deployment.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Applicable for `external_docker` source.
+        source_tarball_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Source Tarball Path
+          description: The object path of the uploaded source tarball.<br><br>Must be an object path obtained from the `POST /deployments/{deployment_id}/upload-url` endpoint. Arbitrary paths are not accepted.<br><br>When updating a deployment (`PATCH`), setting this field to a non-null value will trigger creation of a new revision. Only applicable for `internal_source` source.
+      type: object
+      title: SourceRevisionConfigRequest
+      description: 'Fields for a deployment that are specific to the `source` and require a new revision when modified.<br>
+
+        <br>
+
+        All fields are nullable, but are validated based on the `source`.'
+    FreeDeploymentCountResponse:
+      properties:
+        count:
+          type: integer
+          title: Count
+          description: Number of free deployments currently used by the caller's organization.
+      type: object
+      required:
+      - count
+      title: FreeDeploymentCountResponse
+      description: Response body for the free-deployment count endpoint.
+    DeploymentsList:
+      properties:
+        resources:
+          items:
+            $ref: '#/components/schemas/Deployment'
+          type: array
+          title: Resources
+        offset:
+          type: integer
+          title: Offset
+          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
+      type: object
+      required:
+      - resources
+      - offset
+      title: DeploymentsList
   securitySchemes:
     LangSmith_API_Key:
       type: apiKey

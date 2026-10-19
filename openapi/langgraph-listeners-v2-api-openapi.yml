@@ -3,7 +3,37 @@ info:
   title: LangSmith Deployment Control Plane Listeners (v2) API
   description: 'The LangSmith Deployment Control Plane API is used to programmatically create and manage
 
-    Agent Server deployments.'
+    Agent Server deployments. For example, the APIs can be orchestrated to
+
+    create custom CI/CD workflows.
+
+
+    ## Host
+
+    https://api.host.langchain.com
+
+
+    ## Authentication
+
+    To authenticate with the LangSmith Deployment Control Plane API, set the `X-Api-Key` header
+
+    to a valid LangSmith API key.
+
+
+    ## Versioning
+
+    Each endpoint path is prefixed with a version (e.g. `v1`, `v2`).
+
+
+    ## Quick Start
+
+    1. Call `POST /v2/deployments` to create a new Deployment. The response body contains the Deployment ID (`id`) and the ID of the latest (and first) revision (`latest_revision_id`).
+
+    1. Call `GET /v2/deployments/{deployment_id}` to retrieve the Deployment. Set `deployment_id` in the URL to the value of Deployment ID (`id`).
+
+    1. Poll for revision `status` until `status` is `DEPLOYED` by calling `GET /v2/deployments/{deployment_id}/revisions/{latest_revision_id}`.
+
+    1. Call `PATCH /v2/deployments/{deployment_id}` to update the deployment.'
   version: 0.1.0
 tags:
 - name: Listeners (v2)
@@ -232,23 +262,57 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
-    ListenerComputeConfig:
+    ValidationError:
       properties:
-        k8s_namespaces:
-          anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
-          title: Kubernetes Namespaces
-          description: A list of Kubernetes namespaces to which the listener is configured for.<br><br>Only applicable for `k8s` compute type.
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
       type: object
-      title: ListenerComputeConfig
-      description: 'Fields for a listener that are specific to `compute_type`.<br>
-
-        <br>
-
-        All fields are nullable, but are validated based on `compute_type`.'
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ListenersList:
+      properties:
+        resources:
+          items:
+            $ref: '#/components/schemas/Listener'
+          type: array
+          title: Resources
+        offset:
+          type: integer
+          title: Offset
+          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
+      type: object
+      required:
+      - resources
+      - offset
+      title: ListenersList
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     Listener:
       properties:
         version:
@@ -293,43 +357,23 @@ components:
       - updated_at
       title: Listener
       description: Listener resource.
-    ListenersList:
+    ListenerComputeConfig:
       properties:
-        resources:
-          items:
-            $ref: '#/components/schemas/Listener'
-          type: array
-          title: Resources
-        offset:
-          type: integer
-          title: Offset
-          description: Pagination offset. Pass this value to subsequent requests to fetch the next page.
+        k8s_namespaces:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Kubernetes Namespaces
+          description: A list of Kubernetes namespaces to which the listener is configured for.<br><br>Only applicable for `k8s` compute type.
       type: object
-      required:
-      - resources
-      - offset
-      title: ListenersList
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
+      title: ListenerComputeConfig
+      description: 'Fields for a listener that are specific to `compute_type`.<br>
+
+        <br>
+
+        All fields are nullable, but are validated based on `compute_type`.'
     ListenerCreateRequest:
       properties:
         version:
@@ -375,15 +419,6 @@ components:
       type: object
       title: ListenerPatchRequest
       description: Requst body for patching a listener.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
   securitySchemes:
     LangSmith_API_Key:
       type: apiKey

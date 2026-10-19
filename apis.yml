@@ -136,6 +136,16 @@ apis:
     url: https://github.com/langchain-ai/langgraph
   - type: Authentication
     url: https://docs.langchain.com/langsmith/create-account-api-key
+- aid: langgraph:langgraph-integrations-v2-api
+  name: LangGraph Integrations (v2) API
+  description: The Integrations (v2) API from LangGraph — 8 operation(s) for integrations (v2).
+  humanURL: https://docs.langchain.com/langgraph-platform
+  baseURL: https://api.host.langchain.com
+  tags:
+  - Integrations (v2)
+  properties:
+  - type: OpenAPI
+    url: openapi/langgraph-integrations-v2-api-openapi.yml
 common:
   - type: Plans
     url: plans/langgraph-plans-pricing.yml
