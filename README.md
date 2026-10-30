@@ -1,4 +1,4 @@
-# LangGraph (langgraph)
+# LangGraph
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -66,62 +66,123 @@
 
 LangGraph is an open-source framework from LangChain for building stateful, multi-actor agent workflows with low-level primitives for greater control over agent behavior. LangGraph Platform (LangSmith Deployment) provides managed infrastructure for running agents in production with assistants, threads, and runs.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/langgraph/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/langgraph/refs/heads/main/apis.yml)
+**Areas:** Agents · Artificial Intelligence · LLM · Workflows · Orchestration
 
-## Scope
+## LangGraph on APIs.io
 
-- **Position:** Consuming
-- **Access:** 3rd-Party
+Everything profiled for LangGraph is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/langgraph/](https://apis.io/providers/langgraph/)** — or go straight to one of the APIs or properties below.
 
-## Tags
+### APIs (5)
 
-- Agents
-- Artificial Intelligence
-- Large Language Models
-- Workflows
-- Orchestration
+- [LangGraph Agent Connections (v2) API](https://apis.io/apis/langgraph/langgraph-agent-connections-v2-api/) — The Agent Connections (v2) API from LangGraph — 2 operation(s) for agent connections (v2).
+- [LangGraph Auth Service (v2) API](https://apis.io/apis/langgraph/langgraph-auth-service-v2-api/) — The Auth Service (v2) API from LangGraph — 13 operation(s) for auth service (v2).
+- [LangGraph Deployments (v2) API](https://apis.io/apis/langgraph/langgraph-deployments-v2-api/) — The Deployments (v2) API from LangGraph — 5 operation(s) for deployments (v2).
+- [LangGraph Integrations (v1) API](https://apis.io/apis/langgraph/langgraph-integrations-v1-api/) — The Integrations (v1) API from LangGraph — 4 operation(s) for integrations (v1).
+- [LangGraph Listeners (v2) API](https://apis.io/apis/langgraph/langgraph-listeners-v2-api/) — The Listeners (v2) API from LangGraph — 2 operation(s) for listeners (v2).
 
-## Timestamps
+### Published properties
 
-- **Created:** 2026-01-02
-- **Modified:** 2026-05-19
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-## APIs
+#### Agentic access (1)
 
-### LangSmith Deployment Control Plane API
+Which operations an agent can call, which act, and which need a human in the loop.
 
-The LangSmith Deployment Control Plane API is used to programmatically create and manage Agent Server deployments for LangGraph Platform. The API can be orchestrated to create custom CI/CD workflows for deployments, revisions, integrations (GitHub, Forge), authentication providers, and agent connections. Authentication uses the X-Api-Key header.
+- [Langgraph Agentic Access](https://apis.io/agentic-access/langgraph/langgraph-agentic-access/)
 
-- **Human URL:** [https://docs.langchain.com/langgraph-platform](https://docs.langchain.com/langgraph-platform)
-- **Base URL:** `https://api.host.langchain.com`
+#### Collections (6)
 
-#### Tags
+Postman and Open Collection request collections.
 
-- Agents
-- Deployment
-- Control Plane
-- CI/CD
-- Authentication
-- Integrations
+- [LangSmith Deployment Control Plane API](https://apis.io/collections/langgraph/open-langgraph/)
+- [LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Agent Connections (v2) API](https://apis.io/collections/langgraph/open-langgraph-agent-connections-v2-api/)
+- [LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Auth Service (v2) API](https://apis.io/collections/langgraph/open-langgraph-auth-service-v2-api/)
+- [LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Deployments (v2) API](https://apis.io/collections/langgraph/open-langgraph-deployments-v2-api/)
+- [LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Integrations (v1) API](https://apis.io/collections/langgraph/open-langgraph-integrations-v1-api/)
+- [LangSmith Deployment Control Plane Agent Connections (v2) Agent Connections (v2) Listeners (v2) API](https://apis.io/collections/langgraph/open-langgraph-listeners-v2-api/)
 
-#### Properties
+#### Security (2)
 
-- [Documentation](https://docs.langchain.com/langgraph-platform)
-- [OpenAPI](openapi/langgraph-openapi.json) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/langgraph.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/langgraph.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-- [Repository](https://github.com/langchain-ai/langgraph)
-- [Authentication](https://docs.langchain.com/langsmith/create-account-api-key)
+Authentication, trust centre, and vulnerability disclosure.
 
-## Common Properties
+- [Langgraph Authentication](https://apis.io/security/langgraph/langgraph-authentication/)
+- [Langgraph Domain Security](https://apis.io/security/langgraph/langgraph-domain-security/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Langgraph Plans Pricing](https://apis.io/plans/langgraph/langgraph-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Langgraph Rate Limits](https://apis.io/rate-limits/langgraph/langgraph-rate-limits/)
+
+#### FinOps (1)
+
+What the API costs to run, by operation.
+
+- [Langgraph Finops](https://apis.io/finops/langgraph/langgraph-finops/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
 
 - [Website](https://www.langchain.com/langgraph)
 - [Documentation](https://docs.langchain.com/langgraph-platform)
-- [Git Hub](https://github.com/langchain-ai/langgraph)
-- [Parent Company](https://www.langchain.com/)
-- [Integrations](https://docs.langchain.com/oss/python/integrations/providers/overview)
+- [Blog](https://www.langchain.com/blog/rss.xml)
 
-## Maintainers
+## API Evangelist rating
 
-**FN:** Kin Lane
-**Email:** kin@apievangelist.com
+**Kin Score 31.2** — thin · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 66.1 |
+| Contract quality | 49.0 |
+| Contract governance | 0.0 |
+| Operational transparency | 28.9 |
+| Developer ergonomics | 23.8 |
+| Access clarity | 7.9 |
+
+**Agent readiness 26.2** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | — |
+| MCP Server | — |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | verified |
+| OpenAPI Examples | partial |
+| Rate Limit Signal | derived (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+
+**Regulatory alignment 10.9** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/langgraph/](https://apis.io/providers/langgraph/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for LangGraph: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/langgraph/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
